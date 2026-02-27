@@ -1,0 +1,1741 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ontario Financial Planning Input Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    .container {
+      width: 100%;
+      max-width: none;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 800px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .input-panel {
+      grid-column: 1;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin-top: 0;
+      color: #4b5563;
+    }
+
+    fieldset {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      padding: 14px;
+    }
+
+    legend {
+      font-weight: 700;
+      padding: 0 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .grid.two-col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    input, select {
+      border: 1px solid #9ca3af;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+    }
+
+    .fixed-field-value {
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+      background: #f9fafb;
+      color: #111827;
+      min-height: 19px;
+      display: flex;
+      align-items: center;
+    }
+
+    .payload-box {
+      width: 100%;
+      min-height: 760px;
+      border: 1px solid #9ca3af;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 0.9rem;
+      font-family: Consolas, "Courier New", monospace;
+      background: #f9fafb;
+      color: #111827;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: #2563eb;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .result {
+      margin: 0 0 12px;
+      color: #1f2937;
+      font-weight: 600;
+    }
+
+    .comparison-table-wrap {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 10px;
+      background: #ffffff;
+      overflow-x: auto;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .comparison-table th {
+      font-weight: 700;
+      background: #f9fafb;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comparison-table tr.best-row td {
+      background: #ecfdf5;
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    .strategy-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .strategy-tab {
+      border: 1px solid #9ca3af;
+      background: #ffffff;
+      color: #1f2937;
+      border-radius: 9999px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .strategy-tab.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .chart-panel {
+      grid-column: 2;
+      grid-row: 1 / -1;
+      position: sticky;
+      top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #portfolioChart,
+    #incomeChart,
+    #taxChart {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    #portfolioChart {
+      min-height: 460px;
+    }
+
+    #incomeChart {
+      min-height: 320px;
+    }
+
+    #taxChart {
+      min-height: 300px;
+    }
+
+    @media (max-width: 1150px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      .input-panel {
+        grid-column: 1;
+      }
+
+      .chart-panel {
+        grid-column: 1;
+        grid-row: auto;
+        position: static;
+      }
+
+      #portfolioChart {
+        min-height: 420px;
+      }
+
+      #incomeChart {
+        min-height: 280px;
+      }
+
+      #taxChart {
+        min-height: 250px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Ontario Financial Planning Inputs</h1>
+    <p>Use this form to capture portfolio values for a client in Ontario, Canada.</p>
+
+    <form>
+      <div class="input-panel">
+      <fieldset>
+        <legend>Retirement Goals (CAD)</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="currentAge">Current Age</label>
+            <input id="currentAge" name="currentAge" type="number" min="0" max="120" step="1" placeholder="e.g., 40" />
+          </div>
+          <div class="field">
+            <label for="retirementAge">Expected Retirement Age</label>
+            <input id="retirementAge" name="retirementAge" type="number" min="0" max="120" step="1" placeholder="e.g., 65" />
+          </div>
+          <div class="field">
+            <label for="targetRetirementIncome">Desired Annual Income (Post-Tax)</label>
+            <input id="targetRetirementIncome" name="targetRetirementIncome" type="number" min="0" step="0.01" placeholder="e.g., 80000.00" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Annual Contributions (Pre-Retirement, CAD)</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="annualRRSPContribution">RRSP Contribution</label>
+            <input id="annualRRSPContribution" name="annualRRSPContribution" type="number" min="0" step="0.01" placeholder="e.g., 12000.00" />
+          </div>
+          <div class="field">
+            <label for="annualTFSAContribution">TFSA Contribution</label>
+            <input id="annualTFSAContribution" name="annualTFSAContribution" type="number" min="0" step="0.01" placeholder="e.g., 7000.00" />
+          </div>
+          <div class="field">
+            <label for="annualNonRegisteredContribution">Non-Registered Contribution</label>
+            <input id="annualNonRegisteredContribution" name="annualNonRegisteredContribution" type="number" min="0" step="0.01" placeholder="e.g., 10000.00" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Portfolio Balances (CAD)</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="rrsp">RRSP / RRIF Balance</label>
+            <input id="rrsp" name="rrsp" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label for="tfsa">TFSA Balance</label>
+            <input id="tfsa" name="tfsa" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label for="individualTaxable">Non-Registered Account Balance</label>
+            <input id="individualTaxable" name="individualTaxable" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Pension Payments (CAD)</legend>
+        <div class="grid two-col">
+          <div class="field">
+            <label for="annualOAS">Annual OAS (Gross)</label>
+            <input id="annualOAS" name="annualOAS" type="number" min="0" step="0.01" placeholder="e.g., 9000.00" />
+          </div>
+          <div class="field">
+            <label for="oasStartAge">OAS Start Age</label>
+            <input id="oasStartAge" name="oasStartAge" type="number" min="0" max="120" step="1" placeholder="65" />
+          </div>
+          <div class="field">
+            <label for="annualCPP">Annual CPP (Gross)</label>
+            <input id="annualCPP" name="annualCPP" type="number" min="0" step="0.01" placeholder="e.g., 12000.00" />
+          </div>
+          <div class="field">
+            <label for="cppStartAge">CPP Start Age</label>
+            <input id="cppStartAge" name="cppStartAge" type="number" min="0" max="120" step="1" placeholder="65" />
+          </div>
+          <div class="field">
+            <label for="annualPension">Annual Pension (Gross)</label>
+            <input id="annualPension" name="annualPension" type="number" min="0" step="0.01" placeholder="e.g., 18000.00" />
+          </div>
+          <div class="field">
+            <label for="pensionStartAge">Pension Start Age</label>
+            <input id="pensionStartAge" name="pensionStartAge" type="number" min="0" max="120" step="1" placeholder="65" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Assumptions</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="currentYear">Current Year</label>
+            <input id="currentYear" name="currentYear" type="number" min="1900" max="3000" step="1" placeholder="e.g., 2026" />
+          </div>
+          <div class="field">
+            <label for="arr">ARR (Annual Rate of Return, %)</label>
+            <input id="arr" name="arr" type="number" step="0.01" placeholder="e.g., 5.50" />
+          </div>
+          <div class="field">
+            <label for="inflation">Inflation Rate (%)</label>
+            <input id="inflation" name="inflation" type="number" step="0.01" placeholder="e.g., 2.00" />
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="calculatePlotBtn">Calculate &amp; Plot</button>
+        <button type="button" id="downloadCsvBtn" disabled>Download CSV</button>
+        <button type="button" id="saveInputsJsonBtn">Save Inputs JSON</button>
+        <button type="button" id="loadInputsJsonBtn">Load Inputs JSON</button>
+        <button type="button" id="exportDashboardHtmlBtn">Export Dashboard HTML</button>
+      </div>
+      <input id="loadInputsFile" type="file" accept="application/json,.json" style="display:none" />
+      <p id="analysisSummary" class="result">Enter inputs, then click Calculate &amp; Plot.</p>
+      <p id="strategySummary" class="result" style="font-weight:500;"></p>
+      <div id="taxBracketSummary" class="result" style="font-weight:500;"></div>
+      </div>
+      <div class="chart-panel">
+        <div class="comparison-table-wrap">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Retirement Funding (Withdrawal) Strategy</th>
+                <th>Lifetime Taxes</th>
+                <th>Ending Balance</th>
+                <th>Depleted Age</th>
+              </tr>
+            </thead>
+            <tbody id="strategyComparisonBody">
+              <tr><td colspan="4">Run analysis to compare strategies.</td></tr>
+            </tbody>
+          </table>
+          <div id="strategyTabs" class="strategy-tabs"></div>
+        </div>
+        <div id="portfolioChart"></div>
+        <div id="incomeChart"></div>
+        <div id="taxChart"></div>
+      </div>
+    </form>
+  </main>
+
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script>
+    let latestAnalysis = null;
+    const chartIds = ["portfolioChart", "incomeChart", "taxChart"];
+    let isSyncingXAxis = false;
+    let isSyncingHover = false;
+    let lastSyncedXKey = null;
+    let activeStrategy = "rrif_first";
+
+    function readNumber(id) {
+      const value = Number(document.getElementById(id).value);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function collectFormInputs() {
+      const values = {};
+      document.querySelectorAll(".input-panel input, .input-panel select").forEach((element) => {
+        if (!element.id || element.type === "file" || element.type === "button") {
+          return;
+        }
+        if (element.type === "checkbox") {
+          values[element.id] = element.checked;
+        } else {
+          values[element.id] = element.value;
+        }
+      });
+      return values;
+    }
+
+    function applyFormInputs(values) {
+      Object.entries(values || {}).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (!element) {
+          return;
+        }
+        if (element.type === "checkbox") {
+          element.checked = Boolean(value);
+        } else {
+          element.value = value;
+        }
+      });
+    }
+
+    function setFormInputsFixed(inputPayload) {
+      const inputPanel = document.querySelector(".input-panel");
+      if (!inputPanel) {
+        return;
+      }
+
+      inputPanel.querySelectorAll("fieldset, .actions, #loadInputsFile").forEach((element) => {
+        element.remove();
+      });
+
+      const payloadFieldset = document.createElement("fieldset");
+      const payloadLegend = document.createElement("legend");
+      payloadLegend.textContent = "Input JSON Payload";
+      payloadFieldset.appendChild(payloadLegend);
+
+      const payloadArea = document.createElement("textarea");
+      payloadArea.className = "payload-box";
+      payloadArea.readOnly = true;
+      payloadArea.value = JSON.stringify(inputPayload || {}, null, 2);
+      payloadFieldset.appendChild(payloadArea);
+
+      const summary = document.getElementById("analysisSummary");
+      if (summary) {
+        inputPanel.insertBefore(payloadFieldset, summary);
+      } else {
+        inputPanel.appendChild(payloadFieldset);
+      }
+    }
+
+    function saveInputsJson() {
+      const inputs = collectFormInputs();
+      const blob = new Blob([JSON.stringify(inputs, null, 2)], { type: "application/json;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `financial_planner_inputs_${new Date().getFullYear()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function triggerLoadInputsJson() {
+      const fileInput = document.getElementById("loadInputsFile");
+      fileInput.value = "";
+      fileInput.click();
+    }
+
+    function handleLoadInputsJson(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      const summary = document.getElementById("analysisSummary");
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const values = JSON.parse(String(reader.result || "{}"));
+          applyFormInputs(values);
+          summary.textContent = "Inputs loaded from JSON. Click Calculate & Plot to refresh charts.";
+        } catch (error) {
+          summary.textContent = "Could not parse JSON input file.";
+        }
+      };
+      reader.onerror = () => {
+        summary.textContent = "Could not read JSON input file.";
+      };
+      reader.readAsText(file);
+    }
+
+    function exportDashboardHtml() {
+      const summary = document.getElementById("analysisSummary");
+      const snapshot = {
+        inputs: collectFormInputs(),
+        inputPayload: buildAnalysisPayload(),
+        timeline: latestAnalysis && latestAnalysis.timeline ? latestAnalysis.timeline : null,
+        summaryText: summary.textContent,
+        charts: chartIds.map((chartId) => {
+          const chartDiv = document.getElementById(chartId);
+          if (!chartDiv || !chartDiv.data || !chartDiv.layout) {
+            return { id: chartId, data: null, layout: null };
+          }
+
+          const layout = JSON.parse(JSON.stringify(chartDiv.layout));
+          delete layout.width;
+          if (chartId === "portfolioChart") {
+            layout.height = 620;
+          } else if (chartId === "incomeChart") {
+            layout.height = 460;
+          } else if (chartId === "taxChart") {
+            layout.height = 420;
+          }
+          layout.autosize = true;
+
+          return { id: chartId, data: chartDiv.data, layout };
+        })
+      };
+
+      const snapshotJson = JSON.stringify(snapshot);
+      const snapshotEncoded = encodeURIComponent(snapshotJson).replace(/'/g, "%27");
+      const snapshotScript =
+        "\n<script>\n" +
+        "window.addEventListener('DOMContentLoaded', function () {\n" +
+        "  let snap = null;\n" +
+        "  try {\n" +
+        "    snap = JSON.parse(decodeURIComponent('" + snapshotEncoded + "'));\n" +
+        "  } catch (error) {\n" +
+        "    const summaryEl = document.getElementById('analysisSummary');\n" +
+        "    if (summaryEl) summaryEl.textContent = 'Could not restore exported dashboard snapshot.';\n" +
+        "    return;\n" +
+        "  }\n" +
+        "  if (!snap) return;\n" +
+        "  const summaryEl = document.getElementById('analysisSummary');\n" +
+        "  if (summaryEl && snap.summaryText) {\n" +
+        "    summaryEl.textContent = snap.summaryText;\n" +
+        "  }\n" +
+        "  if (window.Plotly && window.Plotly.Plots && typeof window.Plotly.Plots.resize === 'function') {\n" +
+        "    ['portfolioChart','incomeChart','taxChart'].forEach(function (chartId) {\n" +
+        "      const chartEl = document.getElementById(chartId);\n" +
+        "      if (chartEl) window.Plotly.Plots.resize(chartEl);\n" +
+        "    });\n" +
+        "  }\n" +
+        "  if (snap.timeline && typeof drawPortfolioChart === 'function' && typeof drawIncomeChart === 'function' && typeof drawTaxChart === 'function') {\n" +
+        "    drawPortfolioChart(snap.timeline);\n" +
+        "    drawIncomeChart(snap.timeline);\n" +
+        "    drawTaxChart(snap.timeline);\n" +
+        "    if (typeof attachSynchronizedPanZoom === 'function') attachSynchronizedPanZoom();\n" +
+        "    return;\n" +
+        "  }\n" +
+        "  if (window.Plotly && Array.isArray(snap.charts)) {\n" +
+        "    snap.charts.forEach(function (chart) {\n" +
+        "      if (!chart || !chart.id || !chart.data || !chart.layout) return;\n" +
+        "      Plotly.react(chart.id, chart.data, chart.layout, { responsive: true, displaylogo: false });\n" +
+        "    });\n" +
+        "    if (typeof attachSynchronizedPanZoom === 'function') attachSynchronizedPanZoom();\n" +
+        "  }\n" +
+        "});\n" +
+        "<\\/script>\n";
+
+      const parser = new DOMParser();
+      const exportDoc = parser.parseFromString("<!doctype html>\n" + document.documentElement.outerHTML, "text/html");
+      const inputPanel = exportDoc.querySelector(".input-panel");
+      if (inputPanel) {
+        inputPanel.classList.add("export-readonly-panel");
+        const summaryEl = inputPanel.querySelector("#analysisSummary");
+        const payloadJsonText = JSON.stringify(snapshot.inputPayload || {}, null, 2);
+
+        const payloadFieldset = exportDoc.createElement("fieldset");
+        payloadFieldset.className = "export-payload-fieldset";
+
+        const payloadLegend = exportDoc.createElement("legend");
+        payloadLegend.textContent = "Input JSON Payload";
+        payloadFieldset.appendChild(payloadLegend);
+
+        const payloadArea = exportDoc.createElement("textarea");
+        payloadArea.className = "payload-box";
+        payloadArea.readOnly = true;
+        payloadArea.defaultValue = payloadJsonText;
+        payloadArea.textContent = payloadJsonText;
+        payloadFieldset.appendChild(payloadArea);
+
+        if (summaryEl) {
+          inputPanel.insertBefore(payloadFieldset, summaryEl);
+        } else {
+          inputPanel.appendChild(payloadFieldset);
+        }
+      }
+
+      const exportStyle = exportDoc.createElement("style");
+      exportStyle.textContent = `
+      html, body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      body {
+        padding: 16px !important;
+        box-sizing: border-box;
+      }
+      .container {
+        width: 100% !important;
+        max-width: min(1900px, calc(100vw - 32px)) !important;
+        margin: 0 auto !important;
+        box-sizing: border-box;
+      }
+      form {
+        grid-template-columns: minmax(360px, 40%) minmax(0, 1fr) !important;
+        gap: 16px !important;
+      }
+      .export-readonly-panel {
+        grid-column: 1 !important;
+        min-width: 0;
+      }
+      .chart-panel {
+        grid-column: 2 !important;
+        grid-row: auto !important;
+        position: static !important;
+        min-width: 0;
+        width: 100% !important;
+        overflow: hidden;
+      }
+      #portfolioChart,
+      #incomeChart,
+      #taxChart,
+      .js-plotly-plot,
+      .plot-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        min-width: 0 !important;
+      }
+      @media (max-width: 1150px) {
+        form {
+          grid-template-columns: 1fr !important;
+        }
+        .chart-panel {
+          grid-column: 1 !important;
+        }
+      }
+      .export-readonly-panel fieldset:not(.export-payload-fieldset),
+      .export-readonly-panel .actions,
+      .export-readonly-panel #loadInputsFile {
+        display: none !important;
+      }
+      `;
+      exportDoc.head.appendChild(exportStyle);
+
+      const html = "<!doctype html>\n" + exportDoc.documentElement.outerHTML.replace("</body>", snapshotScript + "</body>");
+      const blob = new Blob([html], { type: "text/html;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "");
+      link.href = url;
+      link.download = `financial_planner_dashboard_${stamp}.html`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function buildAnalysisPayload() {
+      return {
+        currentYear: readNumber("currentYear") || new Date().getFullYear(),
+        currentAge: readNumber("currentAge"),
+        retirementAge: readNumber("retirementAge"),
+        targetRetirementIncome: readNumber("targetRetirementIncome"),
+        arr: readNumber("arr"),
+        inflation: readNumber("inflation"),
+        withdrawalStrategy: activeStrategy,
+        annualRRSPContribution: readNumber("annualRRSPContribution") || 0,
+        annualTFSAContribution: readNumber("annualTFSAContribution") || 0,
+        annualNonRegisteredContribution: readNumber("annualNonRegisteredContribution") || 0,
+        annualOAS: readNumber("annualOAS"),
+        annualCPP: readNumber("annualCPP"),
+        annualPension: readNumber("annualPension"),
+        oasStartAge: readNumber("oasStartAge") || 65,
+        cppStartAge: readNumber("cppStartAge") || 65,
+        pensionStartAge: readNumber("pensionStartAge") || 65,
+        tfsa: readNumber("tfsa"),
+        rrsp: readNumber("rrsp"),
+        individualTaxable: readNumber("individualTaxable"),
+      };
+    }
+
+    function renderStrategyTabs(options, selectedStrategyId) {
+      const tabsContainer = document.getElementById("strategyTabs");
+      if (!tabsContainer) {
+        return;
+      }
+
+      const strategyOptions = Array.isArray(options) && options.length > 0
+        ? options
+        : [
+            { id: "rrif_first", label: "RRIF-first" },
+            { id: "non_registered_first", label: "Non-registered-first" },
+            { id: "tfsa_first", label: "TFSA-first" },
+            { id: "bracket_fill", label: "Bracket-fill" },
+            { id: "tax_smoothing", label: "Tax-smoothing" },
+          ];
+
+      const selectedId = selectedStrategyId || activeStrategy;
+      tabsContainer.innerHTML = strategyOptions
+        .map((option) => {
+          const isActive = option.id === selectedId;
+          const activeClass = isActive ? " active" : "";
+          return `<button type="button" class="strategy-tab${activeClass}" data-strategy-id="${option.id}">${option.label}</button>`;
+        })
+        .join("");
+
+      tabsContainer.querySelectorAll(".strategy-tab").forEach((button) => {
+        button.addEventListener("click", () => {
+          const nextStrategy = button.getAttribute("data-strategy-id");
+          if (!nextStrategy || nextStrategy === activeStrategy) {
+            return;
+          }
+          const calculateButton = document.getElementById("calculatePlotBtn");
+          if (calculateButton && calculateButton.disabled) {
+            return;
+          }
+          activeStrategy = nextStrategy;
+          runAnalysis();
+        });
+      });
+    }
+
+    function buildCsvRows(result, inputs) {
+      const currentYear = Number(inputs.currentYear) || new Date().getFullYear();
+      const rows = [];
+      const arrFactor = 1 + (inputs.arr / 100);
+      const retirementStartAge = Number(result.retirementStartAge ?? Math.max(inputs.currentAge, inputs.retirementAge));
+      let runningRrif = inputs.rrif;
+      let runningRrsp = inputs.rrsp;
+      let runningNonRrif = inputs.nonRrifStart;
+
+      for (let age = inputs.currentAge; age < retirementStartAge; age += 1) {
+        const yearsFromNow = age - inputs.currentAge;
+        const rrifBalance = runningRrif;
+        const rrspBalance = runningRrsp;
+        const nonRrifBalance = runningNonRrif;
+
+        rows.push({
+          calendarYear: currentYear + yearsFromNow,
+          age,
+          totalBalance: rrifBalance + rrspBalance + nonRrifBalance,
+          rrifBalance,
+          nonRrifBalance,
+          portfolioWithdrawal: 0,
+          governmentBenefits: 0,
+          netRetirementIncome: 0,
+          incomeTaxes: 0,
+          capitalGainsTaxes: 0,
+          totalTaxes: 0,
+          grossIncomeTarget: 0,
+          postTaxIncomeTarget: 0,
+        });
+
+        runningRrif = runningRrif * arrFactor;
+        runningRrsp = runningRrsp * arrFactor + inputs.annualRRSPContribution;
+        runningNonRrif = runningNonRrif * arrFactor + inputs.annualTFSAContribution + inputs.annualNonRegisteredContribution;
+      }
+
+      for (let index = 0; index < result.years.length; index += 1) {
+        const age = result.years[index];
+        rows.push({
+          calendarYear: currentYear + (age - inputs.currentAge),
+          age,
+          totalBalance: result.totalBalances[index],
+          rrifBalance: result.rrifBalances[index],
+          nonRrifBalance: result.nonRrifBalances[index],
+          portfolioWithdrawal: result.portfolioWithdrawals[index],
+          governmentBenefits: result.governmentBenefits[index],
+          netRetirementIncome: result.netRetirementIncomes[index],
+          incomeTaxes: result.incomeTaxes[index],
+          capitalGainsTaxes: result.capitalGainsTaxes[index],
+          totalTaxes: result.totalTaxes[index],
+          grossIncomeTarget: result.grossIncomeTargets[index],
+          postTaxIncomeTarget: result.postTaxIncomeTargets[index],
+        });
+      }
+
+      return rows;
+    }
+
+    function toCsv(rows) {
+      const header = [
+        "CalendarYear",
+        "Age",
+        "TotalPortfolioBalance",
+        "RRIFBalance",
+        "NonRRIFBalance",
+        "PortfolioWithdrawalGross",
+        "GovernmentBenefitsGross",
+        "NetRetirementIncomeGross",
+        "IncomeTaxes",
+        "CapitalGainsTaxes",
+        "TotalTaxesPaid",
+        "GrossIncomeTarget",
+        "PostTaxIncomeTarget"
+      ];
+
+      const csvRows = [header.join(",")];
+      rows.forEach((row) => {
+        csvRows.push([
+          row.calendarYear,
+          row.age,
+          row.totalBalance.toFixed(2),
+          row.rrifBalance.toFixed(2),
+          row.nonRrifBalance.toFixed(2),
+          row.portfolioWithdrawal.toFixed(2),
+          row.governmentBenefits.toFixed(2),
+          row.netRetirementIncome.toFixed(2),
+          row.incomeTaxes.toFixed(2),
+          row.capitalGainsTaxes.toFixed(2),
+          row.totalTaxes.toFixed(2),
+          row.grossIncomeTarget.toFixed(2),
+          row.postTaxIncomeTarget.toFixed(2)
+        ].join(","));
+      });
+      return csvRows.join("\n");
+    }
+
+    function downloadCurrentCsv() {
+      if (!latestAnalysis) {
+        return;
+      }
+
+      const rows = buildCsvRows(latestAnalysis.result, latestAnalysis.inputs);
+      const csv = toCsv(rows);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const year = new Date().getFullYear();
+      link.href = url;
+      link.download = `retirement_projection_${year}_to_age_95.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("en-CA", {
+        style: "currency",
+        currency: "CAD",
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function buildXAxisWithAge(years, ages, includeTitle) {
+      const tickStep = years.length > 40 ? 5 : years.length > 25 ? 2 : 1;
+      const tickvals = [];
+      const ticktext = [];
+
+      for (let index = 0; index < years.length; index += tickStep) {
+        tickvals.push(years[index]);
+        ticktext.push(`${years[index]} (${ages[index]})`);
+      }
+
+      if (tickvals[tickvals.length - 1] !== years[years.length - 1]) {
+        tickvals.push(years[years.length - 1]);
+        ticktext.push(`${years[years.length - 1]} (${ages[ages.length - 1]})`);
+      }
+
+      return {
+        range: [years[0], years[years.length - 1]],
+        tickmode: "array",
+        tickvals,
+        ticktext,
+        tickangle: 0,
+        title: includeTitle ? "Calendar Year (Age)" : undefined
+      };
+    }
+
+    function renderStrategyComparisonTable(comparisonRows) {
+      const body = document.getElementById("strategyComparisonBody");
+      if (!body) {
+        return;
+      }
+
+      const rows = Array.isArray(comparisonRows) ? comparisonRows : [];
+      if (rows.length === 0) {
+        body.innerHTML = '<tr><td colspan="4">No strategy comparison data available.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = rows
+        .map((row, index) => {
+          const depleted = row.depletedAge === null || row.depletedAge === undefined ? "No" : String(row.depletedAge);
+          const bestClass = index === 0 ? ' class="best-row"' : "";
+          return `
+            <tr${bestClass}>
+              <td>${row.label || row.id || "-"}</td>
+              <td>${formatCurrency(row.lifetimeTaxes || 0)}</td>
+              <td>${formatCurrency(row.endingBalance || 0)}</td>
+              <td>${depleted}</td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function getXUpdateKey(update) {
+      if (Object.prototype.hasOwnProperty.call(update, "xaxis.autorange")) {
+        return "autorange";
+      }
+      return `${update["xaxis.range[0]"]}|${update["xaxis.range[1]"]}`;
+    }
+
+    function syncXAxis(sourceChartId, update) {
+      const updateKey = getXUpdateKey(update);
+      if (isSyncingXAxis || updateKey === lastSyncedXKey) {
+        return;
+      }
+
+      isSyncingXAxis = true;
+      lastSyncedXKey = updateKey;
+
+      const relayoutPromises = chartIds
+        .filter((chartId) => chartId !== sourceChartId)
+        .map((chartId) => Plotly.relayout(chartId, update).catch(() => null));
+
+      Promise.all(relayoutPromises).finally(() => {
+        setTimeout(() => {
+          isSyncingXAxis = false;
+        }, 0);
+      });
+    }
+
+    function attachSynchronizedPanZoom() {
+      chartIds.forEach((chartId) => {
+        const chartDiv = document.getElementById(chartId);
+        if (!chartDiv) {
+          return;
+        }
+
+        if (typeof chartDiv.removeAllListeners === "function") {
+          chartDiv.removeAllListeners("plotly_relayout");
+          chartDiv.removeAllListeners("plotly_hover");
+          chartDiv.removeAllListeners("plotly_unhover");
+        }
+
+        chartDiv.on("plotly_relayout", (eventData) => {
+          if (!eventData) {
+            return;
+          }
+
+          if (Object.prototype.hasOwnProperty.call(eventData, "xaxis.autorange")) {
+            syncXAxis(chartId, { "xaxis.autorange": true });
+            return;
+          }
+
+          const rangeStart = eventData["xaxis.range[0]"];
+          const rangeEnd = eventData["xaxis.range[1]"];
+          if (rangeStart !== undefined && rangeEnd !== undefined) {
+            syncXAxis(chartId, {
+              "xaxis.range[0]": rangeStart,
+              "xaxis.range[1]": rangeEnd
+            });
+          }
+        });
+
+        chartDiv.on("plotly_hover", (eventData) => {
+          if (isSyncingHover || !eventData || !eventData.points || eventData.points.length === 0) {
+            return;
+          }
+
+          const hoverX = eventData.points[0].x;
+          isSyncingHover = true;
+          try {
+            chartIds.forEach((otherChartId) => {
+              if (otherChartId === chartId) {
+                return;
+              }
+              const otherDiv = document.getElementById(otherChartId);
+              if (!otherDiv || !otherDiv.data || otherDiv.data.length === 0) {
+                return;
+              }
+
+              const pointIndexes = [];
+              otherDiv.data.forEach((trace, traceIndex) => {
+                if (!trace || !Array.isArray(trace.x)) {
+                  return;
+                }
+                const pointNumber = trace.x.findIndex((value) => value === hoverX);
+                if (pointNumber >= 0) {
+                  pointIndexes.push({ curveNumber: traceIndex, pointNumber });
+                }
+              });
+
+              if (pointIndexes.length > 0) {
+                Plotly.Fx.hover(otherChartId, pointIndexes);
+              }
+            });
+          } finally {
+            isSyncingHover = false;
+          }
+        });
+
+        chartDiv.on("plotly_unhover", () => {
+          if (isSyncingHover) {
+            return;
+          }
+
+          isSyncingHover = true;
+          try {
+            chartIds.forEach((otherChartId) => {
+              if (otherChartId !== chartId) {
+                Plotly.Fx.unhover(otherChartId);
+              }
+            });
+          } finally {
+            isSyncingHover = false;
+          }
+        });
+      });
+    }
+
+    function buildPlotTimeline(result, inputs) {
+      const currentYear = Number(inputs.currentYear) || new Date().getFullYear();
+      const arrFactor = 1 + (inputs.arr / 100);
+      const retirementStartAge = Number(result.retirementStartAge ?? Math.max(inputs.currentAge, inputs.retirementAge));
+      const yearsToRetirement = Math.max(0, retirementStartAge - inputs.currentAge);
+      const retirementCalendarYear = currentYear + yearsToRetirement;
+      let runningRrif = inputs.rrif;
+      let runningRrsp = inputs.rrsp;
+      let runningTfsa = inputs.tfsaStart;
+      let runningNonRegistered = inputs.nonRegisteredStart;
+
+      for (let year = 0; year < yearsToRetirement; year += 1) {
+        runningRrif = runningRrif * arrFactor;
+        runningRrsp = runningRrsp * arrFactor + inputs.annualRRSPContribution;
+        runningTfsa = runningTfsa * arrFactor + inputs.annualTFSAContribution;
+        runningNonRegistered = runningNonRegistered * arrFactor + inputs.annualNonRegisteredContribution;
+      }
+
+      const rrifAtRetirementStart = runningRrif + runningRrsp;
+      const tfsaAtRetirementStart = runningTfsa;
+      const nonRegisteredAtRetirementStart = runningNonRegistered;
+      const nonRrifAtRetirementStart = runningTfsa + runningNonRegistered;
+      const totalAtRetirementStart = rrifAtRetirementStart + nonRrifAtRetirementStart;
+
+      const years = [];
+      const ages = [];
+      const totalBalances = [];
+      const rrifBalances = [];
+      const rrspBalances = [];
+      const nonRrifBalances = [];
+      const tfsaBalances = [];
+      const nonRegisteredBalances = [];
+      const withdrawals = [];
+      const rrifWithdrawals = [];
+      const tfsaWithdrawals = [];
+      const nonRegisteredWithdrawals = [];
+      const benefits = [];
+      const netRetirementIncomes = [];
+      const incomeTaxes = [];
+      const capitalGainsTaxes = [];
+      const totalTaxes = [];
+      const averageTaxRates = [];
+      const marginalTaxRates = [];
+      runningRrif = inputs.rrif;
+      runningRrsp = inputs.rrsp;
+      runningTfsa = inputs.tfsaStart;
+      runningNonRegistered = inputs.nonRegisteredStart;
+
+      for (let age = inputs.currentAge; age <= result.lifeExpectancy; age += 1) {
+        const year = currentYear + (age - inputs.currentAge);
+        years.push(year);
+        ages.push(age);
+
+        if (age < retirementStartAge) {
+          const rrifPre = runningRrif;
+          const rrspPre = runningRrsp;
+          const tfsaPre = runningTfsa;
+          const nonRegisteredPre = runningNonRegistered;
+          const nonRrifPre = tfsaPre + nonRegisteredPre;
+
+          totalBalances.push(rrifPre + rrspPre + nonRrifPre);
+          rrifBalances.push(rrifPre);
+          rrspBalances.push(rrspPre);
+          nonRrifBalances.push(nonRrifPre);
+          tfsaBalances.push(tfsaPre);
+          nonRegisteredBalances.push(nonRegisteredPre);
+          withdrawals.push(0);
+          rrifWithdrawals.push(0);
+          tfsaWithdrawals.push(0);
+          nonRegisteredWithdrawals.push(0);
+          benefits.push(0);
+          netRetirementIncomes.push(0);
+          incomeTaxes.push(0);
+          capitalGainsTaxes.push(0);
+          totalTaxes.push(0);
+          averageTaxRates.push(0);
+          marginalTaxRates.push(0);
+
+          runningRrif = runningRrif * arrFactor;
+          runningRrsp = runningRrsp * arrFactor + inputs.annualRRSPContribution;
+          runningTfsa = runningTfsa * arrFactor + inputs.annualTFSAContribution;
+          runningNonRegistered = runningNonRegistered * arrFactor + inputs.annualNonRegisteredContribution;
+        } else {
+          const index = age - retirementStartAge;
+          const modelRrifAfter = result.rrifBalances[index];
+          const modelNonRrifAfter = result.nonRrifBalances[index];
+          const modelTfsaAfter = Array.isArray(result.tfsaRetirementBalances)
+            ? result.tfsaRetirementBalances[index]
+            : Math.max(0, Math.min(modelNonRrifAfter, runningTfsa * arrFactor));
+          const modelTaxableAfter = Array.isArray(result.taxableNonRegisteredRetirementBalances)
+            ? result.taxableNonRegisteredRetirementBalances[index]
+            : Math.max(0, modelNonRrifAfter - modelTfsaAfter);
+
+          const rrifWithdrawal = Array.isArray(result.rrifWithdrawals)
+            ? result.rrifWithdrawals[index]
+            : Math.max(0, runningRrif * arrFactor - modelRrifAfter);
+          const tfsaWithdrawal = Array.isArray(result.tfsaWithdrawals)
+            ? result.tfsaWithdrawals[index]
+            : 0;
+          const nonRegisteredWithdrawal = Array.isArray(result.taxableNonRegisteredWithdrawals)
+            ? result.taxableNonRegisteredWithdrawals[index]
+            : Math.max(0, runningNonRegistered * arrFactor - modelTaxableAfter);
+
+          runningRrif = modelRrifAfter;
+          runningTfsa = modelTfsaAfter;
+          runningNonRegistered = modelTaxableAfter;
+
+          totalBalances.push(result.totalBalances[index]);
+          rrifBalances.push(result.rrifBalances[index]);
+          rrspBalances.push(0);
+          nonRrifBalances.push(result.nonRrifBalances[index]);
+          tfsaBalances.push(runningTfsa);
+          nonRegisteredBalances.push(runningNonRegistered);
+          withdrawals.push(result.portfolioWithdrawals[index]);
+          rrifWithdrawals.push(rrifWithdrawal);
+          tfsaWithdrawals.push(tfsaWithdrawal);
+          nonRegisteredWithdrawals.push(nonRegisteredWithdrawal);
+          benefits.push(result.governmentBenefits[index]);
+          netRetirementIncomes.push(result.netRetirementIncomes[index]);
+          incomeTaxes.push(result.incomeTaxes[index]);
+          capitalGainsTaxes.push(result.capitalGainsTaxes[index]);
+          totalTaxes.push(result.totalTaxes[index]);
+          averageTaxRates.push(result.averageTaxRates[index] || 0);
+          marginalTaxRates.push(result.marginalTaxRates[index] || 0);
+        }
+      }
+
+      return {
+        years,
+        ages,
+        totalBalances,
+        rrifBalances,
+        rrspBalances,
+        nonRrifBalances,
+        tfsaBalances,
+        nonRegisteredBalances,
+        withdrawals,
+        rrifWithdrawals,
+        tfsaWithdrawals,
+        nonRegisteredWithdrawals,
+        benefits,
+        netRetirementIncomes,
+        incomeTaxes,
+        capitalGainsTaxes,
+        totalTaxes,
+        averageTaxRates,
+        marginalTaxRates,
+        chartRanges: result.chartRanges || null,
+        retirementCalendarYear,
+        rrifAtRetirementStart,
+        tfsaAtRetirementStart,
+        nonRegisteredAtRetirementStart,
+        nonRrifAtRetirementStart,
+        totalAtRetirementStart
+      };
+    }
+
+    function drawPortfolioChart(timeline) {
+      const years = timeline.years;
+      const ages = timeline.ages;
+      const xAxisConfig = buildXAxisWithAge(years, ages, true);
+      const totalBalances = timeline.totalBalances;
+      const rrifBalances = timeline.rrifBalances;
+      const rrspBalances = timeline.rrspBalances;
+      const tfsaBalances = timeline.tfsaBalances;
+      const nonRegisteredBalances = timeline.nonRegisteredBalances;
+      const fallbackPrimaryMax = Math.max(1, ...totalBalances, ...rrifBalances, ...rrspBalances, ...tfsaBalances, ...nonRegisteredBalances) * 1.10;
+      const primaryMaxWithHeadroom = Number(timeline.chartRanges?.portfolioMax) || fallbackPrimaryMax;
+
+      const traces = [
+        {
+          x: years,
+          y: totalBalances,
+          customdata: ages,
+          mode: "lines",
+          name: "Total Portfolio Balance",
+          hovertemplate: "%{x} (%{customdata})<br>%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#2563eb", width: 3 }
+        },
+        {
+          x: years,
+          y: rrifBalances,
+          mode: "lines",
+          name: "RRIF Balance",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#0ea5e9", width: 2, dash: "dashdot" }
+        },
+        {
+          x: years,
+          y: rrspBalances,
+          mode: "lines",
+          name: "RRSP Balance",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#0284c7", width: 2, dash: "dot" }
+        },
+        {
+          x: years,
+          y: tfsaBalances,
+          mode: "lines",
+          name: "TFSA Balance",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#14b8a6", width: 2, dash: "dot" }
+        },
+        {
+          x: years,
+          y: nonRegisteredBalances,
+          mode: "lines",
+          name: "Non-Registered Accounts",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#9333ea", width: 2, dash: "dash" }
+        },
+      ];
+
+      const layout = {
+        title: "Investment Portfolio Curves",
+        margin: { l: 70, r: 40, t: 90, b: 90 },
+        xaxis: xAxisConfig,
+        yaxis: {
+          title: "Portfolio Balance (CAD)",
+          tickprefix: "$",
+          separatethousands: true,
+          range: [0, primaryMaxWithHeadroom]
+        },
+        legend: {
+          orientation: "h",
+          x: 0.5,
+          xanchor: "center",
+          y: -0.25,
+          yanchor: "top"
+        },
+        hovermode: "x unified",
+        shapes: [
+          {
+            type: "line",
+            x0: timeline.retirementCalendarYear,
+            x1: timeline.retirementCalendarYear,
+            y0: 0,
+            y1: 1,
+            yref: "paper",
+            line: { color: "#b91c1c", width: 2, dash: "dash" }
+          }
+        ],
+        annotations: [
+          {
+            x: timeline.retirementCalendarYear,
+            y: 1.08,
+            yref: "paper",
+            yanchor: "bottom",
+            text:
+              `Retirement starts (${timeline.retirementCalendarYear})<br>` +
+              `Total: ${formatCurrency(timeline.totalAtRetirementStart)} | ` +
+              `RRIF: ${formatCurrency(timeline.rrifAtRetirementStart)} | ` +
+              `TFSA: ${formatCurrency(timeline.tfsaAtRetirementStart)} | ` +
+              `Non-Registered: ${formatCurrency(timeline.nonRegisteredAtRetirementStart)}`,
+            showarrow: false,
+            font: { size: 11, color: "#991b1b" },
+            bgcolor: "rgba(255,255,255,0.9)",
+            bordercolor: "#fecaca",
+            borderwidth: 1
+          }
+        ]
+      };
+
+      Plotly.newPlot("portfolioChart", traces, layout, {
+        responsive: true,
+        displaylogo: false
+      });
+    }
+
+    function drawIncomeChart(timeline) {
+      const years = timeline.years;
+      const ages = timeline.ages;
+      const xAxisConfig = buildXAxisWithAge(years, ages, false);
+      const rrifWithdrawals = timeline.rrifWithdrawals;
+      const tfsaWithdrawals = timeline.tfsaWithdrawals;
+      const nonRegisteredWithdrawals = timeline.nonRegisteredWithdrawals;
+      const benefits = timeline.benefits;
+      const netRetirementIncomes = timeline.netRetirementIncomes;
+      const fallbackIncomeMax = Math.max(1, ...rrifWithdrawals, ...tfsaWithdrawals, ...nonRegisteredWithdrawals, ...benefits, ...netRetirementIncomes) * 1.10;
+      const incomeMaxWithHeadroom = Number(timeline.chartRanges?.incomeMax) || fallbackIncomeMax;
+      const retirementIndex = years.findIndex((year) => year === timeline.retirementCalendarYear);
+      const rrifWithdrawalAtRetirement = retirementIndex >= 0 ? rrifWithdrawals[retirementIndex] : 0;
+      const tfsaWithdrawalAtRetirement = retirementIndex >= 0 ? tfsaWithdrawals[retirementIndex] : 0;
+      const nonRegisteredWithdrawalAtRetirement = retirementIndex >= 0 ? nonRegisteredWithdrawals[retirementIndex] : 0;
+      const benefitsAtRetirement = retirementIndex >= 0 ? benefits[retirementIndex] : 0;
+      const netIncomeAtRetirement = retirementIndex >= 0 ? netRetirementIncomes[retirementIndex] : 0;
+
+      const traces = [
+        {
+          x: years,
+          y: rrifWithdrawals,
+          customdata: ages,
+          mode: "lines",
+          name: "RRIF Withdrawals",
+          hovertemplate: "%{x} (%{customdata})<br>%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#dc2626", width: 3, dash: "dash" }
+        },
+        {
+          x: years,
+          y: tfsaWithdrawals,
+          mode: "lines",
+          name: "TFSA Withdrawals",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#14b8a6", width: 2, dash: "dot" }
+        },
+        {
+          x: years,
+          y: nonRegisteredWithdrawals,
+          mode: "lines",
+          name: "Non-Registered Withdrawals",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#9333ea", width: 2, dash: "dashdot" }
+        },
+        {
+          x: years,
+          y: benefits,
+          mode: "lines",
+          name: "OAS + CPP + Pension (Gross)",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#7c3aed", width: 2, dash: "dot" }
+        },
+        {
+          x: years,
+          y: netRetirementIncomes,
+          mode: "lines",
+          name: "Net Retirement Income (After Taxes)",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#ea580c", width: 3 }
+        }
+      ];
+
+      const layout = {
+        title: "Income Curves",
+        margin: { l: 70, r: 40, t: 90, b: 90 },
+        xaxis: xAxisConfig,
+        yaxis: {
+          title: "Income (CAD)",
+          tickprefix: "$",
+          separatethousands: true,
+          range: [0, incomeMaxWithHeadroom]
+        },
+        legend: {
+          orientation: "h",
+          x: 0.5,
+          xanchor: "center",
+          y: -0.25,
+          yanchor: "top"
+        },
+        hovermode: "x unified",
+        shapes: [
+          {
+            type: "line",
+            x0: timeline.retirementCalendarYear,
+            x1: timeline.retirementCalendarYear,
+            y0: 0,
+            y1: 1,
+            yref: "paper",
+            line: { color: "#b91c1c", width: 2, dash: "dash" }
+          }
+        ],
+        annotations: [
+          {
+            x: timeline.retirementCalendarYear,
+            y: 1.08,
+            yref: "paper",
+            yanchor: "bottom",
+            text:
+              `Retirement starts (${timeline.retirementCalendarYear})<br>` +
+              `RRIF WD: ${formatCurrency(rrifWithdrawalAtRetirement)} | ` +
+              `TFSA WD: ${formatCurrency(tfsaWithdrawalAtRetirement)} | ` +
+              `Non-Reg WD: ${formatCurrency(nonRegisteredWithdrawalAtRetirement)} | ` +
+              `Benefits: ${formatCurrency(benefitsAtRetirement)} | ` +
+              `Net Income: ${formatCurrency(netIncomeAtRetirement)}`,
+            showarrow: false,
+            font: { size: 11, color: "#991b1b" },
+            bgcolor: "rgba(255,255,255,0.9)",
+            bordercolor: "#fecaca",
+            borderwidth: 1
+          }
+        ]
+      };
+
+      Plotly.newPlot("incomeChart", traces, layout, {
+        responsive: true,
+        displaylogo: false
+      });
+    }
+
+    function drawTaxChart(timeline) {
+      const years = timeline.years;
+      const ages = timeline.ages;
+      const xAxisConfig = buildXAxisWithAge(years, ages, false);
+      const incomeTaxes = timeline.incomeTaxes;
+      const capitalGainsTaxes = timeline.capitalGainsTaxes;
+      const totalTaxes = timeline.totalTaxes;
+      const averageTaxRates = timeline.averageTaxRates;
+      const marginalTaxRates = timeline.marginalTaxRates;
+      const fallbackTaxMax = Math.max(1, ...incomeTaxes, ...capitalGainsTaxes, ...totalTaxes) * 1.10;
+      const fallbackTaxRateMax = Math.max(1, ...averageTaxRates, ...marginalTaxRates) * 1.15;
+      const taxMaxWithHeadroom = Number(timeline.chartRanges?.taxAmountMax) || fallbackTaxMax;
+      const taxRateMax = Number(timeline.chartRanges?.taxRateMax) || fallbackTaxRateMax;
+      const retirementIndex = years.findIndex((year) => year === timeline.retirementCalendarYear);
+      const incomeTaxAtRetirement = retirementIndex >= 0 ? incomeTaxes[retirementIndex] : 0;
+      const capitalGainsTaxAtRetirement = retirementIndex >= 0 ? capitalGainsTaxes[retirementIndex] : 0;
+      const totalTaxAtRetirement = retirementIndex >= 0 ? totalTaxes[retirementIndex] : 0;
+      const averageTaxAtRetirement = retirementIndex >= 0 ? averageTaxRates[retirementIndex] : 0;
+      const marginalTaxAtRetirement = retirementIndex >= 0 ? marginalTaxRates[retirementIndex] : 0;
+
+      const traces = [
+        {
+          x: years,
+          y: incomeTaxes,
+          customdata: ages,
+          mode: "lines",
+          name: "Income Taxes",
+          hovertemplate: "%{x} (%{customdata})<br>%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#a16207", width: 2 }
+        },
+        {
+          x: years,
+          y: capitalGainsTaxes,
+          mode: "lines",
+          name: "Capital Gains Taxes",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#be185d", width: 2, dash: "dot" }
+        },
+        {
+          x: years,
+          y: totalTaxes,
+          mode: "lines",
+          name: "Total Taxes Paid",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#111827", width: 3 }
+        },
+        {
+          x: years,
+          y: averageTaxRates,
+          mode: "lines",
+          name: "Average Tax Rate (%)",
+          hovertemplate: "%{fullData.name}: %{y:.1f}%<extra></extra>",
+          line: { color: "#1d4ed8", width: 2, dash: "dash" },
+          yaxis: "y2"
+        },
+        {
+          x: years,
+          y: marginalTaxRates,
+          mode: "lines",
+          name: "Marginal Tax Rate (%)",
+          hovertemplate: "%{fullData.name}: %{y:.1f}%<extra></extra>",
+          line: { color: "#0f766e", width: 2, dash: "dot" },
+          yaxis: "y2"
+        }
+      ];
+
+      const layout = {
+        title: "Tax Curves",
+        margin: { l: 70, r: 70, t: 95, b: 90 },
+        xaxis: xAxisConfig,
+        yaxis: {
+          title: "Taxes (CAD)",
+          tickprefix: "$",
+          separatethousands: true,
+          range: [0, taxMaxWithHeadroom]
+        },
+        yaxis2: {
+          title: "Tax Rate (%)",
+          overlaying: "y",
+          side: "right",
+          ticksuffix: "%",
+          range: [0, taxRateMax]
+        },
+        legend: {
+          orientation: "h",
+          x: 0.5,
+          xanchor: "center",
+          y: -0.25,
+          yanchor: "top"
+        },
+        hovermode: "x unified",
+        shapes: [
+          {
+            type: "line",
+            x0: timeline.retirementCalendarYear,
+            x1: timeline.retirementCalendarYear,
+            y0: 0,
+            y1: 1,
+            yref: "paper",
+            line: { color: "#b91c1c", width: 2, dash: "dash" }
+          }
+        ],
+        annotations: [
+          {
+            x: timeline.retirementCalendarYear,
+            y: 1.10,
+            yref: "paper",
+            yanchor: "bottom",
+            text:
+              `Retirement starts (${timeline.retirementCalendarYear})<br>` +
+              `Income Tax: ${formatCurrency(incomeTaxAtRetirement)} | ` +
+              `CG Tax: ${formatCurrency(capitalGainsTaxAtRetirement)} | ` +
+              `Total Tax: ${formatCurrency(totalTaxAtRetirement)} | ` +
+              `Avg: ${averageTaxAtRetirement.toFixed(1)}% | ` +
+              `Marginal: ${marginalTaxAtRetirement.toFixed(1)}%`,
+            showarrow: false,
+            font: { size: 11, color: "#991b1b" },
+            bgcolor: "rgba(255,255,255,0.9)",
+            bordercolor: "#fecaca",
+            borderwidth: 1
+          }
+        ]
+      };
+
+      Plotly.newPlot("taxChart", traces, layout, {
+        responsive: true,
+        displaylogo: false
+      });
+    }
+
+    async function runAnalysis() {
+      const payload = buildAnalysisPayload();
+      const currentYear = payload.currentYear;
+      const currentAge = payload.currentAge;
+      const retirementAge = payload.retirementAge;
+      const targetIncome = payload.targetRetirementIncome;
+      const arr = payload.arr;
+
+      const nestEgg =
+        payload.tfsa +
+        payload.rrsp +
+        payload.individualTaxable;
+
+      const summary = document.getElementById("analysisSummary");
+      const strategySummary = document.getElementById("strategySummary");
+      const taxBracketSummary = document.getElementById("taxBracketSummary");
+      const button = document.getElementById("calculatePlotBtn");
+      const downloadButton = document.getElementById("downloadCsvBtn");
+
+      if (currentAge <= 0 || retirementAge <= 0 || targetIncome <= 0 || nestEgg < 0) {
+        summary.textContent = "Please enter valid ages and positive income before calculating.";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Calculating...";
+
+      try {
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          summary.textContent = result.error || "Could not run analysis.";
+          return;
+        }
+
+        const timeline = buildPlotTimeline(result, {
+          currentYear,
+          currentAge,
+          retirementAge,
+          arr,
+          rrif: 0,
+          rrsp: payload.rrsp,
+          tfsaStart: payload.tfsa,
+          nonRegisteredStart: payload.individualTaxable,
+          annualRRSPContribution: payload.annualRRSPContribution,
+          annualTFSAContribution: payload.annualTFSAContribution,
+          annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
+          nonRrifStart: payload.tfsa + payload.individualTaxable
+        });
+
+        drawPortfolioChart(timeline);
+        drawIncomeChart(timeline);
+        drawTaxChart(timeline);
+        attachSynchronizedPanZoom();
+
+        latestAnalysis = {
+          result,
+          inputs: {
+            currentYear,
+            currentAge,
+            retirementAge,
+            arr,
+            rrif: 0,
+            rrsp: payload.rrsp,
+            tfsaStart: payload.tfsa,
+            nonRegisteredStart: payload.individualTaxable,
+            annualRRSPContribution: payload.annualRRSPContribution,
+            annualTFSAContribution: payload.annualTFSAContribution,
+            annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
+            nonRrifStart: payload.tfsa + payload.individualTaxable
+          },
+          timeline
+        };
+        downloadButton.disabled = false;
+
+        const depletionText = result.depletedAge === null
+          ? `portfolio lasts through age ${result.lifeExpectancy}`
+          : `portfolio depletes at age ${result.depletedAge}`;
+
+        summary.textContent =
+          `Years to retirement: ${result.yearsToRetirement} | ` +
+          `Strategy: ${result.selectedStrategyLabel || "RRIF-first"} | ` +
+          `Projected balance at retirement: ${formatCurrency(result.balanceAtRetirement)} | ` +
+          `Income target is post-tax | ` +
+          `Result: ${depletionText}.`;
+
+        if (strategySummary) {
+          const comparison = Array.isArray(result.strategyComparison) ? result.strategyComparison : [];
+          if (comparison.length > 0) {
+            const ranked = comparison
+              .slice(0, comparison.length)
+              .map((item, idx) => `${idx + 1}) ${item.label}: ${formatCurrency(item.lifetimeTaxes)} lifetime tax`)
+              .join(" | ");
+            const best = comparison[0];
+            strategySummary.textContent = `Optimization (lower tax is better): ${ranked}. Best: ${best.label}.`;
+          } else {
+            strategySummary.textContent = "";
+          }
+        }
+
+        if (taxBracketSummary) {
+          const brackets = Array.isArray(result.taxBrackets?.combinedOntario)
+            ? result.taxBrackets.combinedOntario
+            : [];
+
+          if (brackets.length === 0) {
+            taxBracketSummary.textContent = "Tax brackets used (Combined Ontario 2025 base, inflation-indexed annually): n/a";
+          } else {
+            const itemsHtml = brackets
+              .map((row) => {
+                const threshold = row.upTo === null ? "Over prior bracket" : `Up to ${formatCurrency(row.upTo)}`;
+                return `<li>${threshold}: ${(row.rate * 100).toFixed(2)}%</li>`;
+              })
+              .join("");
+
+            taxBracketSummary.innerHTML =
+              `Tax brackets used (Combined Ontario 2025 base, inflation-indexed annually):` +
+              `<ul style="margin:6px 0 0 18px; padding:0; font-weight:400;">${itemsHtml}</ul>`;
+          }
+        }
+
+        renderStrategyComparisonTable(result.strategyComparison);
+        activeStrategy = result.selectedStrategy || activeStrategy;
+        renderStrategyTabs(result.strategyOptions, activeStrategy);
+      } catch (error) {
+        summary.textContent = "Server error while running analysis. Start the Flask app and try again.";
+        if (strategySummary) {
+          strategySummary.textContent = "";
+        }
+        if (taxBracketSummary) {
+          taxBracketSummary.textContent = "";
+        }
+        renderStrategyComparisonTable([]);
+        renderStrategyTabs([], activeStrategy);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Calculate & Plot";
+      }
+    }
+
+    document.getElementById("calculatePlotBtn").addEventListener("click", runAnalysis);
+    document.getElementById("downloadCsvBtn").addEventListener("click", downloadCurrentCsv);
+    document.getElementById("saveInputsJsonBtn").addEventListener("click", saveInputsJson);
+    document.getElementById("loadInputsJsonBtn").addEventListener("click", triggerLoadInputsJson);
+    document.getElementById("loadInputsFile").addEventListener("change", handleLoadInputsJson);
+    document.getElementById("exportDashboardHtmlBtn").addEventListener("click", exportDashboardHtml);
+    const currentYearInput = document.getElementById("currentYear");
+    if (currentYearInput && !currentYearInput.value) {
+      currentYearInput.value = String(new Date().getFullYear());
+    }
+    renderStrategyTabs([], activeStrategy);
+    
+  </script>
+</body>
+</html>
