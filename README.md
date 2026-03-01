@@ -31,10 +31,11 @@ Web-based Ontario retirement planning tool with multi-strategy withdrawal analys
   - Income curves
   - Tax curves
 - Compares strategies in an interactive summary table with sortable columns
+- Lets users switch active strategy by clicking a row in the summary table (plots refresh automatically)
 
 ## Inputs (High Level)
 
-- Portfolio balances (RRSP/RRIF, TFSA, Non-Registered, Appreciating Assets)
+- Portfolio balances (Current Year, Current Age, RRSP/RRIF, TFSA, Non-Registered, Appreciating Assets)
 - Retirement goals (retirement age, target post-tax income, death age)
 - Pension/government income (OAS/CPP/pension + start ages)
 - Assumptions (ARR, inflation, taxable share of non-registered withdrawals, tax assumptions toggles)
@@ -48,6 +49,20 @@ Web-based Ontario retirement planning tool with multi-strategy withdrawal analys
 
 Strategy selection is done by clicking rows in the summary table.
 
+## Summary Table Metrics
+
+Each strategy row includes:
+
+- Retirement Funding (Withdrawal) Strategy
+- Net CPP Income
+- Net OAS Income
+- Pension Income
+- Lifetime Taxes
+- Ending Balance
+- Estate Taxes
+- Ending Balance After Estate Taxes
+- Depleted Age
+
 ## Tax / Rule Assumptions in Model
 
 - Combined Ontario progressive bracket schedule (2025 base, inflation-indexed in model)
@@ -56,16 +71,7 @@ Strategy selection is done by clicking rows in the summary table.
 - Pension income tax credit modeled as an assumption (on/off, simplified approximation)
 - Non-registered withdrawal taxation controlled by user-defined taxable-share percentage
 
-## Estate Metrics in Summary Table
-
-For each strategy, the table includes:
-
-- Lifetime taxes
-- Ending balance
-- Estimated estate taxes
-- Ending balance after estate taxes
-
-Default table ordering is by **maximum ending balance after estate taxes** (descending), and users can click any column header to sort.
+Default table ordering is by **maximum ending balance after estate taxes** (descending), and users can click any column header to sort ascending/descending.
 
 ## Notes / Modeling Scope
 

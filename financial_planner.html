@@ -139,6 +139,10 @@
       font-weight: 600;
     }
 
+    .result.error {
+      color: #b91c1c;
+    }
+
     .comparison-table-wrap {
       border: 1px solid #d1d5db;
       border-radius: 8px;
@@ -292,7 +296,7 @@
             <input id="currentAge" name="currentAge" type="number" min="0" max="120" step="1" placeholder="e.g., 40" />
           </div>          
           <div class="field">
-            <label for="appreciatingAssets">Asset Values (e.g. house)</label>
+            <label for="appreciatingAssets">Net Appreciating Asset Value</label>
             <input id="appreciatingAssets" name="appreciatingAssets" type="number" min="0" step="0.01" placeholder="0.00" />
           </div>
           <div class="field">
@@ -424,6 +428,9 @@
             <thead>
               <tr>
                 <th class="sortable" data-sort-key="label" data-sort-type="string" data-sort-label="Retirement Funding (Withdrawal) Strategy">Retirement Funding (Withdrawal) Strategy</th>
+                <th class="sortable" data-sort-key="netCPPIncome" data-sort-type="number" data-sort-label="Net CPP Income">Net CPP Income</th>
+                <th class="sortable" data-sort-key="netOASIncome" data-sort-type="number" data-sort-label="Net OAS Income">Net OAS Income</th>
+                <th class="sortable" data-sort-key="pensionIncome" data-sort-type="number" data-sort-label="Pension Income">Pension Income</th>
                 <th class="sortable" data-sort-key="lifetimeTaxes" data-sort-type="number" data-sort-label="Lifetime Taxes">Lifetime Taxes</th>
                 <th class="sortable" data-sort-key="endingBalance" data-sort-type="number" data-sort-label="Ending Balance">Ending Balance</th>
                 <th class="sortable" data-sort-key="estateTaxes" data-sort-type="number" data-sort-label="Estate Taxes">Estate Taxes</th>
@@ -432,7 +439,7 @@
               </tr>
             </thead>
             <tbody id="strategyComparisonBody">
-              <tr><td colspan="6">Run analysis to compare strategies.</td></tr>
+              <tr><td colspan="9">Run analysis to compare strategies.</td></tr>
             </tbody>
           </table>
         </div>
@@ -460,6 +467,14 @@
     function readNumber(id) {
       const value = Number(document.getElementById(id).value);
       return Number.isFinite(value) ? value : 0;
+    }
+
+    function setSummaryMessage(summaryElement, message, isError = false) {
+      if (!summaryElement) {
+        return;
+      }
+      summaryElement.textContent = message;
+      summaryElement.classList.toggle("error", Boolean(isError));
     }
 
     function collectFormInputs() {
@@ -551,13 +566,13 @@
         try {
           const values = JSON.parse(String(reader.result || "{}"));
           applyFormInputs(values);
-          summary.textContent = "Inputs loaded from JSON. Click Calculate & Plot to refresh charts.";
+          setSummaryMessage(summary, "Inputs loaded from JSON. Click Calculate & Plot to refresh charts.", false);
         } catch (error) {
-          summary.textContent = "Could not parse JSON input file.";
+          setSummaryMessage(summary, "Could not parse JSON input file.", true);
         }
       };
       reader.onerror = () => {
-        summary.textContent = "Could not read JSON input file.";
+        setSummaryMessage(summary, "Could not read JSON input file.", true);
       };
       reader.readAsText(file);
     }
@@ -1014,7 +1029,7 @@
       const rows = getSortedStrategyComparisonRows(strategyComparisonRows);
       updateStrategyTableHeaderSortIndicators();
       if (rows.length === 0) {
-        body.innerHTML = '<tr><td colspan="6">No strategy comparison data available.</td></tr>';
+        body.innerHTML = '<tr><td colspan="9">No strategy comparison data available.</td></tr>';
         return;
       }
 
@@ -1034,6 +1049,9 @@
           return `
             <tr${rowClass} data-strategy-id="${row.id || ""}">
               <td>${row.label || row.id || "-"}</td>
+              <td>${formatCurrency(row.netCPPIncome || 0)}</td>
+              <td>${formatCurrency(row.netOASIncome || 0)}</td>
+              <td>${formatCurrency(row.pensionIncome || 0)}</td>
               <td>${formatCurrency(row.lifetimeTaxes || 0)}</td>
               <td>${formatCurrency(row.endingBalance || 0)}</td>
               <td>${formatCurrency(row.estateTaxes || 0)}</td>
@@ -1419,7 +1437,7 @@
       ];
 
       const layout = {
-        title: "Investment Portfolio Curves",
+        title: "Portfolio Value Over Time",
         margin: { l: 70, r: 40, t: 90, b: 90 },
         xaxis: xAxisConfig,
         yaxis: {
@@ -1548,7 +1566,7 @@
       ];
 
       const layout = {
-        title: "Income Curves",
+        title: "Retirement Income and Withdrawals Over Time",
         margin: { l: 70, r: 40, t: 90, b: 90 },
         xaxis: xAxisConfig,
         yaxis: {
@@ -1682,7 +1700,7 @@
       ];
 
       const layout = {
-        title: "Tax Curves",
+        title: "Retirement Taxes and Tax Rates Over Time",
         margin: { l: 70, r: 70, t: 95, b: 90 },
         xaxis: xAxisConfig,
         yaxis: {
@@ -1769,12 +1787,12 @@
       const downloadButton = document.getElementById("downloadCsvBtn");
 
       if (currentAge <= 0 || retirementAge <= 0 || deathAge <= 0 || targetIncome <= 0 || nestEgg < 0) {
-        summary.textContent = "Please enter valid ages (including death age) and positive income before calculating.";
+        setSummaryMessage(summary, "Please enter valid ages (including death age) and positive income before calculating.", true);
         return;
       }
 
       if (deathAge < Math.max(currentAge, retirementAge)) {
-        summary.textContent = "Death age must be at least current age and expected retirement age.";
+        setSummaryMessage(summary, "Death age must be at least current age and expected retirement age.", true);
         return;
       }
 
@@ -1791,7 +1809,7 @@
         const result = await response.json();
 
         if (!response.ok) {
-          summary.textContent = result.error || "Could not run analysis.";
+          setSummaryMessage(summary, result.error || "Could not run analysis.", true);
           return;
         }
 
@@ -1843,13 +1861,16 @@
           ? `portfolio lasts through age ${result.lifeExpectancy}`
           : `portfolio depletes at age ${result.depletedAge}`;
 
-        summary.textContent =
+        setSummaryMessage(
+          summary,
           `Years to retirement: ${result.yearsToRetirement} | ` +
           `Strategy: ${result.selectedStrategyLabel || "RRIF then Non-Reg then TFSA"} | ` +
           `Projected balance at retirement: ${formatCurrency(result.balanceAtRetirement)} | ` +
           `Taxable non-registered withdrawal share: ${payload.taxableNonRegisteredWithdrawalPercent.toFixed(2)}% | ` +
           `Income target is post-tax | ` +
-          `Result: ${depletionText}.`;
+          `Result: ${depletionText}.`,
+          false
+        );
 
         if (strategySummary) {
           const comparison = Array.isArray(result.strategyComparison) ? result.strategyComparison : [];
@@ -1889,7 +1910,7 @@
         renderStrategyComparisonTable(result.strategyComparison);
         activeStrategy = result.selectedStrategy || activeStrategy;
       } catch (error) {
-        summary.textContent = "Server error while running analysis. Start the Flask app and try again.";
+        setSummaryMessage(summary, "Server error while running analysis. Start the Flask app and try again.", true);
         if (strategySummary) {
           strategySummary.textContent = "";
         }
