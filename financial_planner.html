@@ -282,19 +282,50 @@
     <form>
       <div class="input-panel">
       <fieldset>
-        <legend>Retirement Goals (CAD)</legend>
+        <legend>Portfolio Balances (CAD)</legend>
         <div class="grid">
+          <div class="field">
+            <label for="currentYear">Current Year</label>
+            <input id="currentYear" name="currentYear" type="number" min="1900" max="3000" step="1" placeholder="e.g., 2026" />
+          </div>
           <div class="field">
             <label for="currentAge">Current Age</label>
             <input id="currentAge" name="currentAge" type="number" min="0" max="120" step="1" placeholder="e.g., 40" />
+          </div>          
+          <div class="field">
+            <label for="appreciatingAssets">Asset Values (e.g. house)</label>
+            <input id="appreciatingAssets" name="appreciatingAssets" type="number" min="0" step="0.01" placeholder="0.00" />
           </div>
+          <div class="field">
+            <label for="rrsp">RRSP / RRIF Balance</label>
+            <input id="rrsp" name="rrsp" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label for="tfsa">TFSA Balance</label>
+            <input id="tfsa" name="tfsa" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label for="individualTaxable">Non-Registered Account Balance</label>
+            <input id="individualTaxable" name="individualTaxable" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Retirement Goals (CAD)</legend>
+        <div class="grid">
           <div class="field">
             <label for="retirementAge">Expected Retirement Age</label>
             <input id="retirementAge" name="retirementAge" type="number" min="0" max="120" step="1" placeholder="e.g., 65" />
           </div>
           <div class="field">
-            <label for="targetRetirementIncome">Desired Annual Income (Post-Tax)</label>
+            <label for="targetRetirementIncome">After-Tax Income (Indexed)</label>
             <input id="targetRetirementIncome" name="targetRetirementIncome" type="number" min="0" step="0.01" placeholder="e.g., 80000.00" />
+          </div>
+          <div class="field">
+            <label for="deathAge">Expected Death Age</label>
+            <input id="deathAge" name="deathAge" type="number" min="1" max="120" step="1" placeholder="e.g., 95" />
           </div>
         </div>
       </fieldset>
@@ -318,28 +349,10 @@
       </fieldset>
 
       <fieldset>
-        <legend>Portfolio Balances (CAD)</legend>
-        <div class="grid">
-          <div class="field">
-            <label for="rrsp">RRSP / RRIF Balance</label>
-            <input id="rrsp" name="rrsp" type="number" min="0" step="0.01" placeholder="0.00" />
-          </div>
-          <div class="field">
-            <label for="tfsa">TFSA Balance</label>
-            <input id="tfsa" name="tfsa" type="number" min="0" step="0.01" placeholder="0.00" />
-          </div>
-          <div class="field">
-            <label for="individualTaxable">Non-Registered Account Balance</label>
-            <input id="individualTaxable" name="individualTaxable" type="number" min="0" step="0.01" placeholder="0.00" />
-          </div>
-        </div>
-      </fieldset>
-
-      <fieldset>
         <legend>Pension Payments (CAD)</legend>
         <div class="grid two-col">
           <div class="field">
-            <label for="annualOAS">Annual OAS (Gross)</label>
+            <label for="annualOAS">Annual OAS (Gross, Present-Day)</label>
             <input id="annualOAS" name="annualOAS" type="number" min="0" step="0.01" placeholder="e.g., 9000.00" />
           </div>
           <div class="field">
@@ -347,7 +360,7 @@
             <input id="oasStartAge" name="oasStartAge" type="number" min="0" max="120" step="1" placeholder="65" />
           </div>
           <div class="field">
-            <label for="annualCPP">Annual CPP (Gross)</label>
+            <label for="annualCPP">Annual CPP (Gross, Present-Day)</label>
             <input id="annualCPP" name="annualCPP" type="number" min="0" step="0.01" placeholder="e.g., 12000.00" />
           </div>
           <div class="field">
@@ -355,7 +368,7 @@
             <input id="cppStartAge" name="cppStartAge" type="number" min="0" max="120" step="1" placeholder="65" />
           </div>
           <div class="field">
-            <label for="annualPension">Annual Pension (Gross)</label>
+            <label for="annualPension">Annual Pension (Gross, Present-Day)</label>
             <input id="annualPension" name="annualPension" type="number" min="0" step="0.01" placeholder="e.g., 18000.00" />
           </div>
           <div class="field">
@@ -369,16 +382,28 @@
         <legend>Assumptions</legend>
         <div class="grid">
           <div class="field">
-            <label for="currentYear">Current Year</label>
-            <input id="currentYear" name="currentYear" type="number" min="1900" max="3000" step="1" placeholder="e.g., 2026" />
-          </div>
-          <div class="field">
             <label for="arr">ARR (Annual Rate of Return, %)</label>
             <input id="arr" name="arr" type="number" step="0.01" placeholder="e.g., 5.50" />
           </div>
           <div class="field">
             <label for="inflation">Inflation Rate (%)</label>
             <input id="inflation" name="inflation" type="number" step="0.01" placeholder="e.g., 2.00" />
+          </div>
+          <div class="field">
+            <label for="taxableNonRegisteredWithdrawalPercent">Taxable Share of Non-Registered Withdrawals (%)</label>
+            <input id="taxableNonRegisteredWithdrawalPercent" name="taxableNonRegisteredWithdrawalPercent" type="number" min="0" max="100" step="0.01" placeholder="100" />
+          </div>
+          <div class="field">
+            <label for="applyPensionIncomeTaxCredit">Apply Pension Income Tax Credit</label>
+            <input id="applyPensionIncomeTaxCredit" name="applyPensionIncomeTaxCredit" type="checkbox" />
+          </div>
+          <div class="field">
+            <label for="applyOASClawback">Apply OAS Clawback</label>
+            <input id="applyOASClawback" name="applyOASClawback" type="checkbox" />
+          </div>
+          <div class="field">
+            <label for="applyMinimumRRIFWithdrawals">Apply Minimum RRIF Withdrawals</label>
+            <input id="applyMinimumRRIFWithdrawals" name="applyMinimumRRIFWithdrawals" type="checkbox" />
           </div>
         </div>
       </fieldset>
@@ -388,7 +413,6 @@
         <button type="button" id="downloadCsvBtn" disabled>Download CSV</button>
         <button type="button" id="saveInputsJsonBtn">Save Inputs JSON</button>
         <button type="button" id="loadInputsJsonBtn">Load Inputs JSON</button>
-        <button type="button" id="exportDashboardHtmlBtn">Export Dashboard HTML</button>
       </div>
       <input id="loadInputsFile" type="file" accept="application/json,.json" style="display:none" />
       <p id="analysisSummary" class="result">Enter inputs, then click Calculate &amp; Plot.</p>
@@ -403,11 +427,13 @@
                 <th>Retirement Funding (Withdrawal) Strategy</th>
                 <th>Lifetime Taxes</th>
                 <th>Ending Balance</th>
+                <th>Estate Taxes</th>
+                <th>Ending Balance After Estate Taxes</th>
                 <th>Depleted Age</th>
               </tr>
             </thead>
             <tbody id="strategyComparisonBody">
-              <tr><td colspan="4">Run analysis to compare strategies.</td></tr>
+              <tr><td colspan="6">Run analysis to compare strategies.</td></tr>
             </tbody>
           </table>
           <div id="strategyTabs" class="strategy-tabs"></div>
@@ -708,6 +734,7 @@
         currentYear: readNumber("currentYear") || new Date().getFullYear(),
         currentAge: readNumber("currentAge"),
         retirementAge: readNumber("retirementAge"),
+        lifeExpectancy: readNumber("deathAge") || 95,
         targetRetirementIncome: readNumber("targetRetirementIncome"),
         arr: readNumber("arr"),
         inflation: readNumber("inflation"),
@@ -718,12 +745,21 @@
         annualOAS: readNumber("annualOAS"),
         annualCPP: readNumber("annualCPP"),
         annualPension: readNumber("annualPension"),
+        applyPensionIncomeTaxCredit: Boolean(document.getElementById("applyPensionIncomeTaxCredit")?.checked),
+        applyOASClawback: Boolean(document.getElementById("applyOASClawback")?.checked),
+        applyMinimumRRIFWithdrawals: Boolean(document.getElementById("applyMinimumRRIFWithdrawals")?.checked),
+        taxableNonRegisteredWithdrawalPercent: (() => {
+          const element = document.getElementById("taxableNonRegisteredWithdrawalPercent");
+          const rawValue = element ? String(element.value).trim() : "";
+          return rawValue === "" ? 100 : readNumber("taxableNonRegisteredWithdrawalPercent");
+        })(),
         oasStartAge: readNumber("oasStartAge") || 65,
         cppStartAge: readNumber("cppStartAge") || 65,
         pensionStartAge: readNumber("pensionStartAge") || 65,
         tfsa: readNumber("tfsa"),
         rrsp: readNumber("rrsp"),
         individualTaxable: readNumber("individualTaxable"),
+        appreciatingAssets: readNumber("appreciatingAssets"),
       };
     }
 
@@ -776,6 +812,8 @@
       let runningRrif = inputs.rrif;
       let runningRrsp = inputs.rrsp;
       let runningNonRrif = inputs.nonRrifStart;
+      let runningAppreciatingAssets = inputs.appreciatingAssetsStart;
+      const inflationFactor = 1 + (inputs.inflation / 100);
 
       for (let age = inputs.currentAge; age < retirementStartAge; age += 1) {
         const yearsFromNow = age - inputs.currentAge;
@@ -786,7 +824,7 @@
         rows.push({
           calendarYear: currentYear + yearsFromNow,
           age,
-          totalBalance: rrifBalance + rrspBalance + nonRrifBalance,
+          totalBalance: rrifBalance + rrspBalance + nonRrifBalance + runningAppreciatingAssets,
           rrifBalance,
           nonRrifBalance,
           portfolioWithdrawal: 0,
@@ -794,6 +832,7 @@
           netRetirementIncome: 0,
           incomeTaxes: 0,
           capitalGainsTaxes: 0,
+          oasClawbacks: 0,
           totalTaxes: 0,
           grossIncomeTarget: 0,
           postTaxIncomeTarget: 0,
@@ -802,6 +841,7 @@
         runningRrif = runningRrif * arrFactor;
         runningRrsp = runningRrsp * arrFactor + inputs.annualRRSPContribution;
         runningNonRrif = runningNonRrif * arrFactor + inputs.annualTFSAContribution + inputs.annualNonRegisteredContribution;
+        runningAppreciatingAssets = runningAppreciatingAssets * inflationFactor;
       }
 
       for (let index = 0; index < result.years.length; index += 1) {
@@ -817,6 +857,7 @@
           netRetirementIncome: result.netRetirementIncomes[index],
           incomeTaxes: result.incomeTaxes[index],
           capitalGainsTaxes: result.capitalGainsTaxes[index],
+          oasClawbacks: Array.isArray(result.oasClawbacks) ? result.oasClawbacks[index] : 0,
           totalTaxes: result.totalTaxes[index],
           grossIncomeTarget: result.grossIncomeTargets[index],
           postTaxIncomeTarget: result.postTaxIncomeTargets[index],
@@ -838,6 +879,7 @@
         "NetRetirementIncomeGross",
         "IncomeTaxes",
         "CapitalGainsTaxes",
+        "OASClawback",
         "TotalTaxesPaid",
         "GrossIncomeTarget",
         "PostTaxIncomeTarget"
@@ -856,6 +898,7 @@
           row.netRetirementIncome.toFixed(2),
           row.incomeTaxes.toFixed(2),
           row.capitalGainsTaxes.toFixed(2),
+          row.oasClawbacks.toFixed(2),
           row.totalTaxes.toFixed(2),
           row.grossIncomeTarget.toFixed(2),
           row.postTaxIncomeTarget.toFixed(2)
@@ -876,7 +919,8 @@
       const link = document.createElement("a");
       const year = new Date().getFullYear();
       link.href = url;
-      link.download = `retirement_projection_${year}_to_age_95.csv`;
+      const toAge = Number(latestAnalysis.result?.lifeExpectancy) || 95;
+      link.download = `retirement_projection_${year}_to_age_${toAge}.csv`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -924,7 +968,7 @@
 
       const rows = Array.isArray(comparisonRows) ? comparisonRows : [];
       if (rows.length === 0) {
-        body.innerHTML = '<tr><td colspan="4">No strategy comparison data available.</td></tr>';
+        body.innerHTML = '<tr><td colspan="6">No strategy comparison data available.</td></tr>';
         return;
       }
 
@@ -937,6 +981,8 @@
               <td>${row.label || row.id || "-"}</td>
               <td>${formatCurrency(row.lifetimeTaxes || 0)}</td>
               <td>${formatCurrency(row.endingBalance || 0)}</td>
+              <td>${formatCurrency(row.estateTaxes || 0)}</td>
+              <td>${formatCurrency(row.endingBalanceAfterEstateTaxes || 0)}</td>
               <td>${depleted}</td>
             </tr>
           `;
@@ -1063,6 +1109,7 @@
     function buildPlotTimeline(result, inputs) {
       const currentYear = Number(inputs.currentYear) || new Date().getFullYear();
       const arrFactor = 1 + (inputs.arr / 100);
+      const inflationFactor = 1 + (inputs.inflation / 100);
       const retirementStartAge = Number(result.retirementStartAge ?? Math.max(inputs.currentAge, inputs.retirementAge));
       const yearsToRetirement = Math.max(0, retirementStartAge - inputs.currentAge);
       const retirementCalendarYear = currentYear + yearsToRetirement;
@@ -1070,19 +1117,22 @@
       let runningRrsp = inputs.rrsp;
       let runningTfsa = inputs.tfsaStart;
       let runningNonRegistered = inputs.nonRegisteredStart;
+      let runningAppreciatingAssets = inputs.appreciatingAssetsStart;
 
       for (let year = 0; year < yearsToRetirement; year += 1) {
         runningRrif = runningRrif * arrFactor;
         runningRrsp = runningRrsp * arrFactor + inputs.annualRRSPContribution;
         runningTfsa = runningTfsa * arrFactor + inputs.annualTFSAContribution;
         runningNonRegistered = runningNonRegistered * arrFactor + inputs.annualNonRegisteredContribution;
+        runningAppreciatingAssets = runningAppreciatingAssets * inflationFactor;
       }
 
       const rrifAtRetirementStart = runningRrif + runningRrsp;
       const tfsaAtRetirementStart = runningTfsa;
       const nonRegisteredAtRetirementStart = runningNonRegistered;
+      const appreciatingAssetsAtRetirementStart = runningAppreciatingAssets;
       const nonRrifAtRetirementStart = runningTfsa + runningNonRegistered;
-      const totalAtRetirementStart = rrifAtRetirementStart + nonRrifAtRetirementStart;
+      const totalAtRetirementStart = rrifAtRetirementStart + nonRrifAtRetirementStart + appreciatingAssetsAtRetirementStart;
 
       const years = [];
       const ages = [];
@@ -1092,6 +1142,7 @@
       const nonRrifBalances = [];
       const tfsaBalances = [];
       const nonRegisteredBalances = [];
+      const appreciatingAssets = [];
       const withdrawals = [];
       const rrifWithdrawals = [];
       const tfsaWithdrawals = [];
@@ -1100,6 +1151,7 @@
       const netRetirementIncomes = [];
       const incomeTaxes = [];
       const capitalGainsTaxes = [];
+      const oasClawbacks = [];
       const totalTaxes = [];
       const averageTaxRates = [];
       const marginalTaxRates = [];
@@ -1107,6 +1159,7 @@
       runningRrsp = inputs.rrsp;
       runningTfsa = inputs.tfsaStart;
       runningNonRegistered = inputs.nonRegisteredStart;
+      runningAppreciatingAssets = inputs.appreciatingAssetsStart;
 
       for (let age = inputs.currentAge; age <= result.lifeExpectancy; age += 1) {
         const year = currentYear + (age - inputs.currentAge);
@@ -1118,14 +1171,16 @@
           const rrspPre = runningRrsp;
           const tfsaPre = runningTfsa;
           const nonRegisteredPre = runningNonRegistered;
+          const appreciatingAssetsPre = runningAppreciatingAssets;
           const nonRrifPre = tfsaPre + nonRegisteredPre;
 
-          totalBalances.push(rrifPre + rrspPre + nonRrifPre);
+          totalBalances.push(rrifPre + rrspPre + nonRrifPre + appreciatingAssetsPre);
           rrifBalances.push(rrifPre);
           rrspBalances.push(rrspPre);
           nonRrifBalances.push(nonRrifPre);
           tfsaBalances.push(tfsaPre);
           nonRegisteredBalances.push(nonRegisteredPre);
+          appreciatingAssets.push(appreciatingAssetsPre);
           withdrawals.push(0);
           rrifWithdrawals.push(0);
           tfsaWithdrawals.push(0);
@@ -1134,6 +1189,7 @@
           netRetirementIncomes.push(0);
           incomeTaxes.push(0);
           capitalGainsTaxes.push(0);
+          oasClawbacks.push(0);
           totalTaxes.push(0);
           averageTaxRates.push(0);
           marginalTaxRates.push(0);
@@ -1142,6 +1198,7 @@
           runningRrsp = runningRrsp * arrFactor + inputs.annualRRSPContribution;
           runningTfsa = runningTfsa * arrFactor + inputs.annualTFSAContribution;
           runningNonRegistered = runningNonRegistered * arrFactor + inputs.annualNonRegisteredContribution;
+          runningAppreciatingAssets = runningAppreciatingAssets * inflationFactor;
         } else {
           const index = age - retirementStartAge;
           const modelRrifAfter = result.rrifBalances[index];
@@ -1152,6 +1209,9 @@
           const modelTaxableAfter = Array.isArray(result.taxableNonRegisteredRetirementBalances)
             ? result.taxableNonRegisteredRetirementBalances[index]
             : Math.max(0, modelNonRrifAfter - modelTfsaAfter);
+          const modelAppreciatingAfter = Array.isArray(result.appreciatingAssets)
+            ? result.appreciatingAssets[index]
+            : runningAppreciatingAssets * inflationFactor;
 
           const rrifWithdrawal = Array.isArray(result.rrifWithdrawals)
             ? result.rrifWithdrawals[index]
@@ -1166,6 +1226,7 @@
           runningRrif = modelRrifAfter;
           runningTfsa = modelTfsaAfter;
           runningNonRegistered = modelTaxableAfter;
+          runningAppreciatingAssets = modelAppreciatingAfter;
 
           totalBalances.push(result.totalBalances[index]);
           rrifBalances.push(result.rrifBalances[index]);
@@ -1173,6 +1234,7 @@
           nonRrifBalances.push(result.nonRrifBalances[index]);
           tfsaBalances.push(runningTfsa);
           nonRegisteredBalances.push(runningNonRegistered);
+          appreciatingAssets.push(runningAppreciatingAssets);
           withdrawals.push(result.portfolioWithdrawals[index]);
           rrifWithdrawals.push(rrifWithdrawal);
           tfsaWithdrawals.push(tfsaWithdrawal);
@@ -1181,6 +1243,7 @@
           netRetirementIncomes.push(result.netRetirementIncomes[index]);
           incomeTaxes.push(result.incomeTaxes[index]);
           capitalGainsTaxes.push(result.capitalGainsTaxes[index]);
+          oasClawbacks.push(Array.isArray(result.oasClawbacks) ? result.oasClawbacks[index] : 0);
           totalTaxes.push(result.totalTaxes[index]);
           averageTaxRates.push(result.averageTaxRates[index] || 0);
           marginalTaxRates.push(result.marginalTaxRates[index] || 0);
@@ -1196,6 +1259,7 @@
         nonRrifBalances,
         tfsaBalances,
         nonRegisteredBalances,
+        appreciatingAssets,
         withdrawals,
         rrifWithdrawals,
         tfsaWithdrawals,
@@ -1204,6 +1268,7 @@
         netRetirementIncomes,
         incomeTaxes,
         capitalGainsTaxes,
+        oasClawbacks,
         totalTaxes,
         averageTaxRates,
         marginalTaxRates,
@@ -1212,6 +1277,7 @@
         rrifAtRetirementStart,
         tfsaAtRetirementStart,
         nonRegisteredAtRetirementStart,
+        appreciatingAssetsAtRetirementStart,
         nonRrifAtRetirementStart,
         totalAtRetirementStart
       };
@@ -1226,7 +1292,8 @@
       const rrspBalances = timeline.rrspBalances;
       const tfsaBalances = timeline.tfsaBalances;
       const nonRegisteredBalances = timeline.nonRegisteredBalances;
-      const fallbackPrimaryMax = Math.max(1, ...totalBalances, ...rrifBalances, ...rrspBalances, ...tfsaBalances, ...nonRegisteredBalances) * 1.10;
+      const appreciatingAssets = timeline.appreciatingAssets;
+      const fallbackPrimaryMax = Math.max(1, ...totalBalances, ...rrifBalances, ...rrspBalances, ...tfsaBalances, ...nonRegisteredBalances, ...appreciatingAssets) * 1.10;
       const primaryMaxWithHeadroom = Number(timeline.chartRanges?.portfolioMax) || fallbackPrimaryMax;
 
       const traces = [
@@ -1271,6 +1338,14 @@
           hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
           line: { color: "#9333ea", width: 2, dash: "dash" }
         },
+        {
+          x: years,
+          y: appreciatingAssets,
+          mode: "lines",
+          name: "Appreciating Assets",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#7c3aed", width: 2, dash: "dot" }
+        },
       ];
 
       const layout = {
@@ -1313,7 +1388,8 @@
               `Total: ${formatCurrency(timeline.totalAtRetirementStart)} | ` +
               `RRIF: ${formatCurrency(timeline.rrifAtRetirementStart)} | ` +
               `TFSA: ${formatCurrency(timeline.tfsaAtRetirementStart)} | ` +
-              `Non-Registered: ${formatCurrency(timeline.nonRegisteredAtRetirementStart)}`,
+              `Non-Registered: ${formatCurrency(timeline.nonRegisteredAtRetirementStart)} | ` +
+              `Appreciating Assets: ${formatCurrency(timeline.appreciatingAssetsAtRetirementStart)}`,
             showarrow: false,
             font: { size: 11, color: "#991b1b" },
             bgcolor: "rgba(255,255,255,0.9)",
@@ -1337,14 +1413,16 @@
       const tfsaWithdrawals = timeline.tfsaWithdrawals;
       const nonRegisteredWithdrawals = timeline.nonRegisteredWithdrawals;
       const benefits = timeline.benefits;
+      const oasClawbacks = timeline.oasClawbacks;
       const netRetirementIncomes = timeline.netRetirementIncomes;
-      const fallbackIncomeMax = Math.max(1, ...rrifWithdrawals, ...tfsaWithdrawals, ...nonRegisteredWithdrawals, ...benefits, ...netRetirementIncomes) * 1.10;
+      const fallbackIncomeMax = Math.max(1, ...rrifWithdrawals, ...tfsaWithdrawals, ...nonRegisteredWithdrawals, ...benefits, ...oasClawbacks, ...netRetirementIncomes) * 1.10;
       const incomeMaxWithHeadroom = Number(timeline.chartRanges?.incomeMax) || fallbackIncomeMax;
       const retirementIndex = years.findIndex((year) => year === timeline.retirementCalendarYear);
       const rrifWithdrawalAtRetirement = retirementIndex >= 0 ? rrifWithdrawals[retirementIndex] : 0;
       const tfsaWithdrawalAtRetirement = retirementIndex >= 0 ? tfsaWithdrawals[retirementIndex] : 0;
       const nonRegisteredWithdrawalAtRetirement = retirementIndex >= 0 ? nonRegisteredWithdrawals[retirementIndex] : 0;
       const benefitsAtRetirement = retirementIndex >= 0 ? benefits[retirementIndex] : 0;
+      const oasClawbackAtRetirement = retirementIndex >= 0 ? oasClawbacks[retirementIndex] : 0;
       const netIncomeAtRetirement = retirementIndex >= 0 ? netRetirementIncomes[retirementIndex] : 0;
 
       const traces = [
@@ -1380,6 +1458,14 @@
           name: "OAS + CPP + Pension (Gross)",
           hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
           line: { color: "#7c3aed", width: 2, dash: "dot" }
+        },
+        {
+          x: years,
+          y: oasClawbacks,
+          mode: "lines",
+          name: "OAS Recovery Tax",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#7c2d12", width: 2, dash: "dashdot" }
         },
         {
           x: years,
@@ -1432,6 +1518,7 @@
               `TFSA WD: ${formatCurrency(tfsaWithdrawalAtRetirement)} | ` +
               `Non-Reg WD: ${formatCurrency(nonRegisteredWithdrawalAtRetirement)} | ` +
               `Benefits: ${formatCurrency(benefitsAtRetirement)} | ` +
+              `OAS Recovery: ${formatCurrency(oasClawbackAtRetirement)} | ` +
               `Net Income: ${formatCurrency(netIncomeAtRetirement)}`,
             showarrow: false,
             font: { size: 11, color: "#991b1b" },
@@ -1454,16 +1541,18 @@
       const xAxisConfig = buildXAxisWithAge(years, ages, false);
       const incomeTaxes = timeline.incomeTaxes;
       const capitalGainsTaxes = timeline.capitalGainsTaxes;
+      const oasClawbacks = timeline.oasClawbacks;
       const totalTaxes = timeline.totalTaxes;
       const averageTaxRates = timeline.averageTaxRates;
       const marginalTaxRates = timeline.marginalTaxRates;
-      const fallbackTaxMax = Math.max(1, ...incomeTaxes, ...capitalGainsTaxes, ...totalTaxes) * 1.10;
+      const fallbackTaxMax = Math.max(1, ...incomeTaxes, ...capitalGainsTaxes, ...oasClawbacks, ...totalTaxes) * 1.10;
       const fallbackTaxRateMax = Math.max(1, ...averageTaxRates, ...marginalTaxRates) * 1.15;
       const taxMaxWithHeadroom = Number(timeline.chartRanges?.taxAmountMax) || fallbackTaxMax;
       const taxRateMax = Number(timeline.chartRanges?.taxRateMax) || fallbackTaxRateMax;
       const retirementIndex = years.findIndex((year) => year === timeline.retirementCalendarYear);
       const incomeTaxAtRetirement = retirementIndex >= 0 ? incomeTaxes[retirementIndex] : 0;
       const capitalGainsTaxAtRetirement = retirementIndex >= 0 ? capitalGainsTaxes[retirementIndex] : 0;
+      const oasClawbackAtRetirement = retirementIndex >= 0 ? oasClawbacks[retirementIndex] : 0;
       const totalTaxAtRetirement = retirementIndex >= 0 ? totalTaxes[retirementIndex] : 0;
       const averageTaxAtRetirement = retirementIndex >= 0 ? averageTaxRates[retirementIndex] : 0;
       const marginalTaxAtRetirement = retirementIndex >= 0 ? marginalTaxRates[retirementIndex] : 0;
@@ -1485,6 +1574,14 @@
           name: "Capital Gains Taxes",
           hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
           line: { color: "#be185d", width: 2, dash: "dot" }
+        },
+        {
+          x: years,
+          y: oasClawbacks,
+          mode: "lines",
+          name: "OAS Recovery Tax",
+          hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+          line: { color: "#7c2d12", width: 2, dash: "dashdot" }
         },
         {
           x: years,
@@ -1560,6 +1657,7 @@
               `Retirement starts (${timeline.retirementCalendarYear})<br>` +
               `Income Tax: ${formatCurrency(incomeTaxAtRetirement)} | ` +
               `CG Tax: ${formatCurrency(capitalGainsTaxAtRetirement)} | ` +
+              `OAS Recovery: ${formatCurrency(oasClawbackAtRetirement)} | ` +
               `Total Tax: ${formatCurrency(totalTaxAtRetirement)} | ` +
               `Avg: ${averageTaxAtRetirement.toFixed(1)}% | ` +
               `Marginal: ${marginalTaxAtRetirement.toFixed(1)}%`,
@@ -1583,13 +1681,16 @@
       const currentYear = payload.currentYear;
       const currentAge = payload.currentAge;
       const retirementAge = payload.retirementAge;
+      const deathAge = payload.lifeExpectancy;
       const targetIncome = payload.targetRetirementIncome;
       const arr = payload.arr;
+      const inflation = payload.inflation;
 
       const nestEgg =
         payload.tfsa +
         payload.rrsp +
-        payload.individualTaxable;
+        payload.individualTaxable +
+        payload.appreciatingAssets;
 
       const summary = document.getElementById("analysisSummary");
       const strategySummary = document.getElementById("strategySummary");
@@ -1597,8 +1698,13 @@
       const button = document.getElementById("calculatePlotBtn");
       const downloadButton = document.getElementById("downloadCsvBtn");
 
-      if (currentAge <= 0 || retirementAge <= 0 || targetIncome <= 0 || nestEgg < 0) {
-        summary.textContent = "Please enter valid ages and positive income before calculating.";
+      if (currentAge <= 0 || retirementAge <= 0 || deathAge <= 0 || targetIncome <= 0 || nestEgg < 0) {
+        summary.textContent = "Please enter valid ages (including death age) and positive income before calculating.";
+        return;
+      }
+
+      if (deathAge < Math.max(currentAge, retirementAge)) {
+        summary.textContent = "Death age must be at least current age and expected retirement age.";
         return;
       }
 
@@ -1624,10 +1730,12 @@
           currentAge,
           retirementAge,
           arr,
+          inflation,
           rrif: 0,
           rrsp: payload.rrsp,
           tfsaStart: payload.tfsa,
           nonRegisteredStart: payload.individualTaxable,
+          appreciatingAssetsStart: payload.appreciatingAssets,
           annualRRSPContribution: payload.annualRRSPContribution,
           annualTFSAContribution: payload.annualTFSAContribution,
           annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
@@ -1646,10 +1754,12 @@
             currentAge,
             retirementAge,
             arr,
+            inflation,
             rrif: 0,
             rrsp: payload.rrsp,
             tfsaStart: payload.tfsa,
             nonRegisteredStart: payload.individualTaxable,
+            appreciatingAssetsStart: payload.appreciatingAssets,
             annualRRSPContribution: payload.annualRRSPContribution,
             annualTFSAContribution: payload.annualTFSAContribution,
             annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
@@ -1667,6 +1777,7 @@
           `Years to retirement: ${result.yearsToRetirement} | ` +
           `Strategy: ${result.selectedStrategyLabel || "RRIF-first"} | ` +
           `Projected balance at retirement: ${formatCurrency(result.balanceAtRetirement)} | ` +
+          `Taxable non-registered withdrawal share: ${payload.taxableNonRegisteredWithdrawalPercent.toFixed(2)}% | ` +
           `Income target is post-tax | ` +
           `Result: ${depletionText}.`;
 
@@ -1729,10 +1840,25 @@
     document.getElementById("saveInputsJsonBtn").addEventListener("click", saveInputsJson);
     document.getElementById("loadInputsJsonBtn").addEventListener("click", triggerLoadInputsJson);
     document.getElementById("loadInputsFile").addEventListener("change", handleLoadInputsJson);
-    document.getElementById("exportDashboardHtmlBtn").addEventListener("click", exportDashboardHtml);
     const currentYearInput = document.getElementById("currentYear");
     if (currentYearInput && !currentYearInput.value) {
       currentYearInput.value = String(new Date().getFullYear());
+    }
+    const taxableShareInput = document.getElementById("taxableNonRegisteredWithdrawalPercent");
+    if (taxableShareInput && !taxableShareInput.value) {
+      taxableShareInput.value = "100";
+    }
+    const deathAgeInput = document.getElementById("deathAge");
+    if (deathAgeInput && !deathAgeInput.value) {
+      deathAgeInput.value = "95";
+    }
+    const applyOASClawbackInput = document.getElementById("applyOASClawback");
+    if (applyOASClawbackInput && !applyOASClawbackInput.checked) {
+      applyOASClawbackInput.checked = true;
+    }
+    const applyMinimumRRIFWithdrawalsInput = document.getElementById("applyMinimumRRIFWithdrawals");
+    if (applyMinimumRRIFWithdrawalsInput && !applyMinimumRRIFWithdrawalsInput.checked) {
+      applyMinimumRRIFWithdrawalsInput.checked = true;
     }
     renderStrategyTabs([], activeStrategy);
     
