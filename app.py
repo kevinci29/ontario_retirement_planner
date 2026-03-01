@@ -178,6 +178,27 @@ def analyze():
             ending_balance_after_estate_taxes = max(0.0, ending_balance - estate_taxes)
             return estate_taxes, ending_balance_after_estate_taxes
 
+        def estimate_benefit_totals(candidate) -> tuple[float, float, float]:
+            years_to_retirement = max(0, inputs.retirement_age - inputs.current_age)
+            inflation_factor = 1 + (inputs.inflation_rate / 100.0)
+
+            net_cpp_income_total = 0.0
+            net_oas_income_total = 0.0
+            pension_income_total = 0.0
+
+            for offset, age in enumerate(candidate.years):
+                annual_index_factor = inflation_factor ** (years_to_retirement + offset)
+                oas_income = inputs.annual_oas_income * annual_index_factor if age >= inputs.oas_start_age else 0.0
+                cpp_income = inputs.annual_cpp_income * annual_index_factor if age >= inputs.cpp_start_age else 0.0
+                pension_income = inputs.annual_pension_income * annual_index_factor if age >= inputs.pension_start_age else 0.0
+                oas_clawback = candidate.oas_clawbacks[offset] if offset < len(candidate.oas_clawbacks) else 0.0
+
+                net_cpp_income_total += cpp_income
+                net_oas_income_total += max(0.0, oas_income - oas_clawback)
+                pension_income_total += pension_income
+
+            return net_cpp_income_total, net_oas_income_total, pension_income_total
+
         def max_or_zero(values: list[float]) -> float:
             return max(values) if values else 0.0
 
@@ -191,10 +212,14 @@ def analyze():
         for strategy_id, strategy_label in STRATEGY_LABELS.items():
             candidate = project_retirement(inputs, strategy=strategy_id)
             estate_taxes, ending_balance_after_estate_taxes = estimate_estate_taxes(candidate)
+            net_cpp_income, net_oas_income, pension_income = estimate_benefit_totals(candidate)
             strategy_comparison.append(
                 {
                     "id": strategy_id,
                     "label": strategy_label,
+                    "netCPPIncome": net_cpp_income,
+                    "netOASIncome": net_oas_income,
+                    "pensionIncome": pension_income,
                     "lifetimeTaxes": sum(candidate.total_taxes),
                     "depletedAge": candidate.depleted_age,
                     "endingBalance": candidate.total_balances[-1] if candidate.total_balances else 0.0,

@@ -292,7 +292,7 @@
             <input id="currentAge" name="currentAge" type="number" min="0" max="120" step="1" placeholder="e.g., 40" />
           </div>          
           <div class="field">
-            <label for="appreciatingAssets">Asset Values (e.g. house)</label>
+            <label for="appreciatingAssets">Net Appreciating Asset Value</label>
             <input id="appreciatingAssets" name="appreciatingAssets" type="number" min="0" step="0.01" placeholder="0.00" />
           </div>
           <div class="field">
@@ -424,6 +424,9 @@
             <thead>
               <tr>
                 <th class="sortable" data-sort-key="label" data-sort-type="string" data-sort-label="Retirement Funding (Withdrawal) Strategy">Retirement Funding (Withdrawal) Strategy</th>
+                <th class="sortable" data-sort-key="netCPPIncome" data-sort-type="number" data-sort-label="Net CPP Income">Net CPP Income</th>
+                <th class="sortable" data-sort-key="netOASIncome" data-sort-type="number" data-sort-label="Net OAS Income">Net OAS Income</th>
+                <th class="sortable" data-sort-key="pensionIncome" data-sort-type="number" data-sort-label="Pension Income">Pension Income</th>
                 <th class="sortable" data-sort-key="lifetimeTaxes" data-sort-type="number" data-sort-label="Lifetime Taxes">Lifetime Taxes</th>
                 <th class="sortable" data-sort-key="endingBalance" data-sort-type="number" data-sort-label="Ending Balance">Ending Balance</th>
                 <th class="sortable" data-sort-key="estateTaxes" data-sort-type="number" data-sort-label="Estate Taxes">Estate Taxes</th>
@@ -432,7 +435,7 @@
               </tr>
             </thead>
             <tbody id="strategyComparisonBody">
-              <tr><td colspan="6">Run analysis to compare strategies.</td></tr>
+              <tr><td colspan="9">Run analysis to compare strategies.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1014,7 +1017,7 @@
       const rows = getSortedStrategyComparisonRows(strategyComparisonRows);
       updateStrategyTableHeaderSortIndicators();
       if (rows.length === 0) {
-        body.innerHTML = '<tr><td colspan="6">No strategy comparison data available.</td></tr>';
+        body.innerHTML = '<tr><td colspan="9">No strategy comparison data available.</td></tr>';
         return;
       }
 
@@ -1034,6 +1037,9 @@
           return `
             <tr${rowClass} data-strategy-id="${row.id || ""}">
               <td>${row.label || row.id || "-"}</td>
+              <td>${formatCurrency(row.netCPPIncome || 0)}</td>
+              <td>${formatCurrency(row.netOASIncome || 0)}</td>
+              <td>${formatCurrency(row.pensionIncome || 0)}</td>
               <td>${formatCurrency(row.lifetimeTaxes || 0)}</td>
               <td>${formatCurrency(row.endingBalance || 0)}</td>
               <td>${formatCurrency(row.estateTaxes || 0)}</td>
@@ -1419,7 +1425,7 @@
       ];
 
       const layout = {
-        title: "Investment Portfolio Curves",
+        title: "Portfolio Value Over Time",
         margin: { l: 70, r: 40, t: 90, b: 90 },
         xaxis: xAxisConfig,
         yaxis: {
@@ -1548,7 +1554,7 @@
       ];
 
       const layout = {
-        title: "Income Curves",
+        title: "Retirement Income and Withdrawals Over Time",
         margin: { l: 70, r: 40, t: 90, b: 90 },
         xaxis: xAxisConfig,
         yaxis: {
@@ -1682,7 +1688,7 @@
       ];
 
       const layout = {
-        title: "Tax Curves",
+        title: "Retirement Taxes and Tax Rates Over Time",
         margin: { l: 70, r: 70, t: 95, b: 90 },
         xaxis: xAxisConfig,
         yaxis: {
