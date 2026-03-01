@@ -53,9 +53,8 @@ RRIF_MIN_WITHDRAWAL_RATES_BY_AGE: dict[int, float] = {
 }
 
 STRATEGY_LABELS: dict[str, str] = {
-    "rrif_first": "RRIF-first",
-    "non_registered_first": "Non-registered-first",
-    "tfsa_first": "TFSA-first",
+    "rrif_first": "RRIF then Non-Reg then TFSA",
+    "non_registered_first": "Non-Reg then TFSA then RRIF",
     "bracket_fill": "Bracket-fill",
     "tax_smoothing": "Tax-smoothing",
 }
@@ -344,12 +343,9 @@ def project_retirement(inputs: RetirementInputs, strategy: str = "rrif_first") -
                 if strategy == "non_registered_first":
                     taxable_non_rrif_withdrawal = min(remaining_withdrawal, taxable_non_rrif_balance)
                     remaining = max(0.0, remaining_withdrawal - taxable_non_rrif_withdrawal)
-                    additional_rrif, tfsa_withdrawal = split_evenly(remaining, remaining_rrif_capacity, tfsa_balance)
-                    rrif_withdrawal += additional_rrif
-                elif strategy == "tfsa_first":
-                    tfsa_withdrawal = min(remaining_withdrawal, tfsa_balance)
-                    remaining = max(0.0, remaining_withdrawal - tfsa_withdrawal)
-                    additional_rrif, taxable_non_rrif_withdrawal = split_evenly(remaining, remaining_rrif_capacity, taxable_non_rrif_balance)
+                    tfsa_withdrawal = min(remaining, tfsa_balance)
+                    remaining_after_tfsa = max(0.0, remaining - tfsa_withdrawal)
+                    additional_rrif = min(remaining_after_tfsa, remaining_rrif_capacity)
                     rrif_withdrawal += additional_rrif
                 elif strategy in {"bracket_fill", "tax_smoothing"}:
                     base_target_taxable = 52886.0 * ((1 + inflation) ** offset)
@@ -367,7 +363,9 @@ def project_retirement(inputs: RetirementInputs, strategy: str = "rrif_first") -
                     additional_rrif = min(remaining_withdrawal, remaining_rrif_capacity)
                     rrif_withdrawal += additional_rrif
                     remaining = max(0.0, remaining_withdrawal - additional_rrif)
-                    tfsa_withdrawal, taxable_non_rrif_withdrawal = split_evenly(remaining, tfsa_balance, taxable_non_rrif_balance)
+                    taxable_non_rrif_withdrawal = min(remaining, taxable_non_rrif_balance)
+                    remaining_after_non_registered = max(0.0, remaining - taxable_non_rrif_withdrawal)
+                    tfsa_withdrawal = min(remaining_after_non_registered, tfsa_balance)
 
                 total_withdrawal_effective = rrif_withdrawal + tfsa_withdrawal + taxable_non_rrif_withdrawal
 

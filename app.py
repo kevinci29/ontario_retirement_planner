@@ -232,7 +232,9 @@ def analyze():
                 max_or_zero(candidate.marginal_tax_rates),
             )
 
-        strategy_comparison.sort(key=lambda item: item["lifetimeTaxes"])
+        strategy_comparison.sort(
+            key=lambda item: (-item["endingBalanceAfterEstateTaxes"], item["lifetimeTaxes"])
+        )
 
         return jsonify(
             {

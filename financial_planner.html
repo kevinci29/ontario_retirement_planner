@@ -166,6 +166,15 @@
       background: #f9fafb;
     }
 
+    .comparison-table th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .comparison-table th.sortable:hover {
+      background: #eef2ff;
+    }
+
     .comparison-table tr:last-child td {
       border-bottom: none;
     }
@@ -176,28 +185,18 @@
       font-weight: 700;
     }
 
-    .strategy-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .strategy-tab {
-      border: 1px solid #9ca3af;
-      background: #ffffff;
-      color: #1f2937;
-      border-radius: 9999px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
+    .comparison-table tr.strategy-row {
       cursor: pointer;
     }
 
-    .strategy-tab.active {
-      background: #2563eb;
-      border-color: #2563eb;
-      color: #ffffff;
+    .comparison-table tr.strategy-row:hover td {
+      background: #eff6ff;
+    }
+
+    .comparison-table tr.selected-row td {
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-weight: 700;
     }
 
     .chart-panel {
@@ -382,7 +381,7 @@
         <legend>Assumptions</legend>
         <div class="grid">
           <div class="field">
-            <label for="arr">ARR (Annual Rate of Return, %)</label>
+            <label for="arr">Investment ARR (%)</label>
             <input id="arr" name="arr" type="number" step="0.01" placeholder="e.g., 5.50" />
           </div>
           <div class="field">
@@ -390,7 +389,7 @@
             <input id="inflation" name="inflation" type="number" step="0.01" placeholder="e.g., 2.00" />
           </div>
           <div class="field">
-            <label for="taxableNonRegisteredWithdrawalPercent">Taxable Share of Non-Registered Withdrawals (%)</label>
+            <label for="taxableNonRegisteredWithdrawalPercent">Non-Reg Withdrawal Taxable %</label>
             <input id="taxableNonRegisteredWithdrawalPercent" name="taxableNonRegisteredWithdrawalPercent" type="number" min="0" max="100" step="0.01" placeholder="100" />
           </div>
           <div class="field">
@@ -424,19 +423,18 @@
           <table class="comparison-table">
             <thead>
               <tr>
-                <th>Retirement Funding (Withdrawal) Strategy</th>
-                <th>Lifetime Taxes</th>
-                <th>Ending Balance</th>
-                <th>Estate Taxes</th>
-                <th>Ending Balance After Estate Taxes</th>
-                <th>Depleted Age</th>
+                <th class="sortable" data-sort-key="label" data-sort-type="string" data-sort-label="Retirement Funding (Withdrawal) Strategy">Retirement Funding (Withdrawal) Strategy</th>
+                <th class="sortable" data-sort-key="lifetimeTaxes" data-sort-type="number" data-sort-label="Lifetime Taxes">Lifetime Taxes</th>
+                <th class="sortable" data-sort-key="endingBalance" data-sort-type="number" data-sort-label="Ending Balance">Ending Balance</th>
+                <th class="sortable" data-sort-key="estateTaxes" data-sort-type="number" data-sort-label="Estate Taxes">Estate Taxes</th>
+                <th class="sortable" data-sort-key="endingBalanceAfterEstateTaxes" data-sort-type="number" data-sort-label="Ending Balance After Estate Taxes">Ending Balance After Estate Taxes</th>
+                <th class="sortable" data-sort-key="depletedAge" data-sort-type="number" data-sort-label="Depleted Age">Depleted Age</th>
               </tr>
             </thead>
             <tbody id="strategyComparisonBody">
               <tr><td colspan="6">Run analysis to compare strategies.</td></tr>
             </tbody>
           </table>
-          <div id="strategyTabs" class="strategy-tabs"></div>
         </div>
         <div id="portfolioChart"></div>
         <div id="incomeChart"></div>
@@ -453,6 +451,11 @@
     let isSyncingHover = false;
     let lastSyncedXKey = null;
     let activeStrategy = "rrif_first";
+    let strategyComparisonRows = [];
+    let strategySortState = {
+      key: "endingBalanceAfterEstateTaxes",
+      direction: "desc"
+    };
 
     function readNumber(id) {
       const value = Number(document.getElementById(id).value);
@@ -763,47 +766,6 @@
       };
     }
 
-    function renderStrategyTabs(options, selectedStrategyId) {
-      const tabsContainer = document.getElementById("strategyTabs");
-      if (!tabsContainer) {
-        return;
-      }
-
-      const strategyOptions = Array.isArray(options) && options.length > 0
-        ? options
-        : [
-            { id: "rrif_first", label: "RRIF-first" },
-            { id: "non_registered_first", label: "Non-registered-first" },
-            { id: "tfsa_first", label: "TFSA-first" },
-            { id: "bracket_fill", label: "Bracket-fill" },
-            { id: "tax_smoothing", label: "Tax-smoothing" },
-          ];
-
-      const selectedId = selectedStrategyId || activeStrategy;
-      tabsContainer.innerHTML = strategyOptions
-        .map((option) => {
-          const isActive = option.id === selectedId;
-          const activeClass = isActive ? " active" : "";
-          return `<button type="button" class="strategy-tab${activeClass}" data-strategy-id="${option.id}">${option.label}</button>`;
-        })
-        .join("");
-
-      tabsContainer.querySelectorAll(".strategy-tab").forEach((button) => {
-        button.addEventListener("click", () => {
-          const nextStrategy = button.getAttribute("data-strategy-id");
-          if (!nextStrategy || nextStrategy === activeStrategy) {
-            return;
-          }
-          const calculateButton = document.getElementById("calculatePlotBtn");
-          if (calculateButton && calculateButton.disabled) {
-            return;
-          }
-          activeStrategy = nextStrategy;
-          runAnalysis();
-        });
-      });
-    }
-
     function buildCsvRows(result, inputs) {
       const currentYear = Number(inputs.currentYear) || new Date().getFullYear();
       const rows = [];
@@ -960,13 +922,97 @@
       };
     }
 
+    function defaultSortDirectionForKey(sortKey) {
+      return sortKey === "label" ? "asc" : "desc";
+    }
+
+    function normalizedStrategySortValue(row, sortKey) {
+      if (sortKey === "label") {
+        return String(row.label || row.id || "").toLowerCase();
+      }
+      if (sortKey === "depletedAge") {
+        return row.depletedAge === null || row.depletedAge === undefined ? Number.POSITIVE_INFINITY : Number(row.depletedAge);
+      }
+      const numericValue = Number(row[sortKey] ?? 0);
+      return Number.isFinite(numericValue) ? numericValue : 0;
+    }
+
+    function getSortedStrategyComparisonRows(rows) {
+      const sourceRows = Array.isArray(rows) ? rows : [];
+      const sortedRows = sourceRows.slice();
+      const directionMultiplier = strategySortState.direction === "asc" ? 1 : -1;
+
+      sortedRows.sort((left, right) => {
+        const leftValue = normalizedStrategySortValue(left, strategySortState.key);
+        const rightValue = normalizedStrategySortValue(right, strategySortState.key);
+
+        if (leftValue < rightValue) {
+          return -1 * directionMultiplier;
+        }
+        if (leftValue > rightValue) {
+          return 1 * directionMultiplier;
+        }
+
+        const leftTieBreaker = Number(left.endingBalanceAfterEstateTaxes ?? 0);
+        const rightTieBreaker = Number(right.endingBalanceAfterEstateTaxes ?? 0);
+        if (leftTieBreaker > rightTieBreaker) {
+          return -1;
+        }
+        if (leftTieBreaker < rightTieBreaker) {
+          return 1;
+        }
+        return 0;
+      });
+
+      return sortedRows;
+    }
+
+    function updateStrategyTableHeaderSortIndicators() {
+      const headers = document.querySelectorAll(".comparison-table th.sortable[data-sort-key]");
+      headers.forEach((header) => {
+        const sortKey = header.getAttribute("data-sort-key");
+        const baseLabel = header.getAttribute("data-sort-label") || header.textContent || "";
+        if (sortKey === strategySortState.key) {
+          const arrow = strategySortState.direction === "asc" ? "↑" : "↓";
+          header.textContent = `${baseLabel} ${arrow}`;
+        } else {
+          header.textContent = baseLabel;
+        }
+      });
+    }
+
+    function initializeStrategyTableSorting() {
+      const headers = document.querySelectorAll(".comparison-table th.sortable[data-sort-key]");
+      headers.forEach((header) => {
+        header.addEventListener("click", () => {
+          const selectedKey = header.getAttribute("data-sort-key");
+          if (!selectedKey) {
+            return;
+          }
+
+          if (strategySortState.key === selectedKey) {
+            strategySortState.direction = strategySortState.direction === "asc" ? "desc" : "asc";
+          } else {
+            strategySortState.key = selectedKey;
+            strategySortState.direction = defaultSortDirectionForKey(selectedKey);
+          }
+
+          renderStrategyComparisonTable(strategyComparisonRows);
+        });
+      });
+
+      updateStrategyTableHeaderSortIndicators();
+    }
+
     function renderStrategyComparisonTable(comparisonRows) {
       const body = document.getElementById("strategyComparisonBody");
       if (!body) {
         return;
       }
 
-      const rows = Array.isArray(comparisonRows) ? comparisonRows : [];
+      strategyComparisonRows = Array.isArray(comparisonRows) ? comparisonRows.slice() : [];
+      const rows = getSortedStrategyComparisonRows(strategyComparisonRows);
+      updateStrategyTableHeaderSortIndicators();
       if (rows.length === 0) {
         body.innerHTML = '<tr><td colspan="6">No strategy comparison data available.</td></tr>';
         return;
@@ -975,9 +1021,18 @@
       body.innerHTML = rows
         .map((row, index) => {
           const depleted = row.depletedAge === null || row.depletedAge === undefined ? "No" : String(row.depletedAge);
-          const bestClass = index === 0 ? ' class="best-row"' : "";
+          const isBest = index === 0;
+          const isSelected = row.id === activeStrategy;
+          const classes = ["strategy-row"];
+          if (isBest) {
+            classes.push("best-row");
+          }
+          if (isSelected) {
+            classes.push("selected-row");
+          }
+          const rowClass = ` class="${classes.join(" ")}"`;
           return `
-            <tr${bestClass}>
+            <tr${rowClass} data-strategy-id="${row.id || ""}">
               <td>${row.label || row.id || "-"}</td>
               <td>${formatCurrency(row.lifetimeTaxes || 0)}</td>
               <td>${formatCurrency(row.endingBalance || 0)}</td>
@@ -988,6 +1043,21 @@
           `;
         })
         .join("");
+
+      body.querySelectorAll("tr.strategy-row[data-strategy-id]").forEach((tableRow) => {
+        tableRow.addEventListener("click", () => {
+          const nextStrategy = tableRow.getAttribute("data-strategy-id");
+          if (!nextStrategy || nextStrategy === activeStrategy) {
+            return;
+          }
+          const calculateButton = document.getElementById("calculatePlotBtn");
+          if (calculateButton && calculateButton.disabled) {
+            return;
+          }
+          activeStrategy = nextStrategy;
+          runAnalysis();
+        });
+      });
     }
 
     function getXUpdateKey(update) {
@@ -1775,7 +1845,7 @@
 
         summary.textContent =
           `Years to retirement: ${result.yearsToRetirement} | ` +
-          `Strategy: ${result.selectedStrategyLabel || "RRIF-first"} | ` +
+          `Strategy: ${result.selectedStrategyLabel || "RRIF then Non-Reg then TFSA"} | ` +
           `Projected balance at retirement: ${formatCurrency(result.balanceAtRetirement)} | ` +
           `Taxable non-registered withdrawal share: ${payload.taxableNonRegisteredWithdrawalPercent.toFixed(2)}% | ` +
           `Income target is post-tax | ` +
@@ -1786,10 +1856,10 @@
           if (comparison.length > 0) {
             const ranked = comparison
               .slice(0, comparison.length)
-              .map((item, idx) => `${idx + 1}) ${item.label}: ${formatCurrency(item.lifetimeTaxes)} lifetime tax`)
+              .map((item, idx) => `${idx + 1}) ${item.label}: ${formatCurrency(item.endingBalanceAfterEstateTaxes || 0)} after estate tax`)
               .join(" | ");
             const best = comparison[0];
-            strategySummary.textContent = `Optimization (lower tax is better): ${ranked}. Best: ${best.label}.`;
+            strategySummary.textContent = `Optimization (higher ending balance after estate taxes is better): ${ranked}. Best: ${best.label}.`;
           } else {
             strategySummary.textContent = "";
           }
@@ -1818,7 +1888,6 @@
 
         renderStrategyComparisonTable(result.strategyComparison);
         activeStrategy = result.selectedStrategy || activeStrategy;
-        renderStrategyTabs(result.strategyOptions, activeStrategy);
       } catch (error) {
         summary.textContent = "Server error while running analysis. Start the Flask app and try again.";
         if (strategySummary) {
@@ -1828,7 +1897,6 @@
           taxBracketSummary.textContent = "";
         }
         renderStrategyComparisonTable([]);
-        renderStrategyTabs([], activeStrategy);
       } finally {
         button.disabled = false;
         button.textContent = "Calculate & Plot";
@@ -1860,7 +1928,7 @@
     if (applyMinimumRRIFWithdrawalsInput && !applyMinimumRRIFWithdrawalsInput.checked) {
       applyMinimumRRIFWithdrawalsInput.checked = true;
     }
-    renderStrategyTabs([], activeStrategy);
+    initializeStrategyTableSorting();
     
   </script>
 </body>
