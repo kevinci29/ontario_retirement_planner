@@ -417,8 +417,43 @@
         <button type="button" id="saveInputsJsonBtn">Save Inputs JSON</button>
         <button type="button" id="loadInputsJsonBtn">Load Inputs JSON</button>
       </div>
+
+      <fieldset>
+        <legend>Stress Testing</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="stressArrMin">Stress ARR Min (%)</label>
+            <input id="stressArrMin" name="stressArrMin" type="number" step="0.01" placeholder="auto: ARR - 2" />
+          </div>
+          <div class="field">
+            <label for="stressArrMax">Stress ARR Max (%)</label>
+            <input id="stressArrMax" name="stressArrMax" type="number" step="0.01" placeholder="auto: ARR + 2" />
+          </div>
+          <div class="field">
+            <label for="stressArrStep">Stress ARR Step (%)</label>
+            <input id="stressArrStep" name="stressArrStep" type="number" min="0.01" step="0.01" placeholder="auto: 1" />
+          </div>
+          <div class="field">
+            <label for="stressInflationMin">Stress Inflation Min (%)</label>
+            <input id="stressInflationMin" name="stressInflationMin" type="number" step="0.01" placeholder="auto: inflation - 1" />
+          </div>
+          <div class="field">
+            <label for="stressInflationMax">Stress Inflation Max (%)</label>
+            <input id="stressInflationMax" name="stressInflationMax" type="number" step="0.01" placeholder="auto: inflation + 1" />
+          </div>
+          <div class="field">
+            <label for="stressInflationStep">Stress Inflation Step (%)</label>
+            <input id="stressInflationStep" name="stressInflationStep" type="number" min="0.01" step="0.01" placeholder="auto: 0.5" />
+          </div>
+        </div>
+        <div class="actions" style="margin-bottom:0;">
+          <button type="button" id="runStressBtn">Run Stress Test</button>
+          <button type="button" id="clearStressBtn">Clear Stress Results</button>
+        </div>
+      </fieldset>
       <input id="loadInputsFile" type="file" accept="application/json,.json" style="display:none" />
       <p id="analysisSummary" class="result">Enter inputs, then click Calculate &amp; Plot.</p>
+      <p id="stressSummary" class="result"></p>
       <p id="strategySummary" class="result" style="font-weight:500;"></p>
       <div id="taxBracketSummary" class="result" style="font-weight:500;"></div>
       </div>
@@ -453,6 +488,8 @@
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <script>
     let latestAnalysis = null;
+    let latestStressBands = null;
+    let latestStressSignature = null;
     const chartIds = ["portfolioChart", "incomeChart", "taxChart"];
     let isSyncingXAxis = false;
     let isSyncingHover = false;
@@ -467,6 +504,242 @@
     function readNumber(id) {
       const value = Number(document.getElementById(id).value);
       return Number.isFinite(value) ? value : 0;
+    }
+
+    function readOptionalNumber(id) {
+      const element = document.getElementById(id);
+      if (!element) {
+        return null;
+      }
+      const raw = String(element.value ?? "").trim();
+      if (!raw) {
+        return null;
+      }
+      const value = Number(raw);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function buildTimelineInputs(payload, currentYear) {
+      return {
+        currentYear,
+        currentAge: payload.currentAge,
+        retirementAge: payload.retirementAge,
+        arr: payload.arr,
+        inflation: payload.inflation,
+        rrif: 0,
+        rrsp: payload.rrsp,
+        tfsaStart: payload.tfsa,
+        nonRegisteredStart: payload.individualTaxable,
+        appreciatingAssetsStart: payload.appreciatingAssets,
+        annualRRSPContribution: payload.annualRRSPContribution,
+        annualTFSAContribution: payload.annualTFSAContribution,
+        annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
+        nonRrifStart: payload.tfsa + payload.individualTaxable
+      };
+    }
+
+    function createRangeValues(minimum, maximum, step) {
+      const values = [];
+      if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || !Number.isFinite(step) || step <= 0) {
+        return values;
+      }
+
+      let minValue = minimum;
+      let maxValue = maximum;
+      if (minValue > maxValue) {
+        const temp = minValue;
+        minValue = maxValue;
+        maxValue = temp;
+      }
+
+      const epsilon = step / 1000;
+      for (let value = minValue; value <= maxValue + epsilon; value += step) {
+        values.push(Number(value.toFixed(6)));
+        if (values.length > 300) {
+          break;
+        }
+      }
+      return values;
+    }
+
+    function percentile(values, p) {
+      if (!Array.isArray(values) || values.length === 0) {
+        return 0;
+      }
+      const sorted = values.slice().sort((a, b) => a - b);
+      const clamped = Math.max(0, Math.min(1, p));
+      const index = (sorted.length - 1) * clamped;
+      const lowerIndex = Math.floor(index);
+      const upperIndex = Math.ceil(index);
+      if (lowerIndex === upperIndex) {
+        return sorted[lowerIndex];
+      }
+      const lowerWeight = upperIndex - index;
+      const upperWeight = index - lowerIndex;
+      return sorted[lowerIndex] * lowerWeight + sorted[upperIndex] * upperWeight;
+    }
+
+    function buildStressBandsFromTimelines(timelines, arrValues, inflationValues) {
+      if (!Array.isArray(timelines) || timelines.length === 0) {
+        return null;
+      }
+
+      const reference = timelines[0];
+      const years = reference.years || [];
+      const ages = reference.ages || [];
+      const p10Portfolio = [];
+      const p50Portfolio = [];
+      const p90Portfolio = [];
+      const p10Income = [];
+      const p50Income = [];
+      const p90Income = [];
+      const p10Taxes = [];
+      const p50Taxes = [];
+      const p90Taxes = [];
+
+      for (let index = 0; index < years.length; index += 1) {
+        const portfolioValues = timelines.map((item) => Number(item.totalBalances[index] || 0));
+        const incomeValues = timelines.map((item) => Number(item.netRetirementIncomes[index] || 0));
+        const taxValues = timelines.map((item) => Number(item.totalTaxes[index] || 0));
+
+        p10Portfolio.push(percentile(portfolioValues, 0.10));
+        p50Portfolio.push(percentile(portfolioValues, 0.50));
+        p90Portfolio.push(percentile(portfolioValues, 0.90));
+        p10Income.push(percentile(incomeValues, 0.10));
+        p50Income.push(percentile(incomeValues, 0.50));
+        p90Income.push(percentile(incomeValues, 0.90));
+        p10Taxes.push(percentile(taxValues, 0.10));
+        p50Taxes.push(percentile(taxValues, 0.50));
+        p90Taxes.push(percentile(taxValues, 0.90));
+      }
+
+      return {
+        years,
+        ages,
+        scenarioCount: timelines.length,
+        arrValues,
+        inflationValues,
+        portfolio: { p10: p10Portfolio, p50: p50Portfolio, p90: p90Portfolio },
+        income: { p10: p10Income, p50: p50Income, p90: p90Income },
+        taxes: { p10: p10Taxes, p50: p50Taxes, p90: p90Taxes }
+      };
+    }
+
+    async function fetchAnalysisResult(payload) {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Could not run analysis.");
+      }
+
+      return result;
+    }
+
+    function getStressConfig(payload) {
+      const defaultArrMin = payload.arr - 2;
+      const defaultArrMax = payload.arr + 2;
+      const defaultArrStep = 1;
+      const defaultInflationMin = Math.max(0, payload.inflation - 1);
+      const defaultInflationMax = payload.inflation + 1;
+      const defaultInflationStep = 0.5;
+
+      const arrMin = readOptionalNumber("stressArrMin") ?? defaultArrMin;
+      const arrMax = readOptionalNumber("stressArrMax") ?? defaultArrMax;
+      const arrStep = readOptionalNumber("stressArrStep") ?? defaultArrStep;
+      const inflationMin = readOptionalNumber("stressInflationMin") ?? defaultInflationMin;
+      const inflationMax = readOptionalNumber("stressInflationMax") ?? defaultInflationMax;
+      const inflationStep = readOptionalNumber("stressInflationStep") ?? defaultInflationStep;
+
+      return {
+        arrMin,
+        arrMax,
+        arrStep,
+        inflationMin,
+        inflationMax,
+        inflationStep
+      };
+    }
+
+    function buildStressSignature(payload, config) {
+      return JSON.stringify({
+        currentYear: payload.currentYear,
+        currentAge: payload.currentAge,
+        retirementAge: payload.retirementAge,
+        lifeExpectancy: payload.lifeExpectancy,
+        targetRetirementIncome: payload.targetRetirementIncome,
+        withdrawalStrategy: payload.withdrawalStrategy,
+        annualRRSPContribution: payload.annualRRSPContribution,
+        annualTFSAContribution: payload.annualTFSAContribution,
+        annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
+        annualOAS: payload.annualOAS,
+        annualCPP: payload.annualCPP,
+        annualPension: payload.annualPension,
+        applyPensionIncomeTaxCredit: payload.applyPensionIncomeTaxCredit,
+        applyOASClawback: payload.applyOASClawback,
+        applyMinimumRRIFWithdrawals: payload.applyMinimumRRIFWithdrawals,
+        taxableNonRegisteredWithdrawalPercent: payload.taxableNonRegisteredWithdrawalPercent,
+        oasStartAge: payload.oasStartAge,
+        cppStartAge: payload.cppStartAge,
+        pensionStartAge: payload.pensionStartAge,
+        tfsa: payload.tfsa,
+        rrsp: payload.rrsp,
+        individualTaxable: payload.individualTaxable,
+        appreciatingAssets: payload.appreciatingAssets,
+        stress: config
+      });
+    }
+
+    async function runStressSweep(basePayload, currentYear) {
+      const config = getStressConfig(basePayload);
+      const signature = buildStressSignature(basePayload, config);
+      const arrValues = createRangeValues(config.arrMin, config.arrMax, config.arrStep);
+      const inflationValues = createRangeValues(config.inflationMin, config.inflationMax, config.inflationStep);
+
+      if (arrValues.length === 0 || inflationValues.length === 0) {
+        throw new Error("Stress ranges must include valid min/max/step values.");
+      }
+
+      const scenarioCount = arrValues.length * inflationValues.length;
+      if (scenarioCount > 121) {
+        throw new Error("Stress grid is too large. Reduce range size or increase step values (max 121 scenarios).");
+      }
+
+      const scenarioPayloads = [];
+      arrValues.forEach((arrValue) => {
+        inflationValues.forEach((inflationValue) => {
+          scenarioPayloads.push({
+            ...basePayload,
+            arr: arrValue,
+            inflation: inflationValue
+          });
+        });
+      });
+
+      const scenarioResults = await Promise.allSettled(scenarioPayloads.map((payload) => fetchAnalysisResult(payload)));
+      const fulfilled = scenarioResults
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => item.status === "fulfilled");
+
+      if (fulfilled.length === 0) {
+        throw new Error("Stress testing failed for all scenarios.");
+      }
+
+      const scenarioTimelines = fulfilled.map(({ item, index }) => {
+        const result = item.value;
+        const scenarioPayload = scenarioPayloads[index];
+        const timelineInputs = buildTimelineInputs(scenarioPayload, currentYear);
+        return buildPlotTimeline(result, timelineInputs);
+      });
+
+      return {
+        signature,
+        bands: buildStressBandsFromTimelines(scenarioTimelines, arrValues, inflationValues)
+      };
     }
 
     function setSummaryMessage(summaryElement, message, isError = false) {
@@ -1371,7 +1644,7 @@
       };
     }
 
-    function drawPortfolioChart(timeline) {
+    function drawPortfolioChart(timeline, stressBands = null) {
       const years = timeline.years;
       const ages = timeline.ages;
       const xAxisConfig = buildXAxisWithAge(years, ages, true);
@@ -1382,9 +1655,47 @@
       const nonRegisteredBalances = timeline.nonRegisteredBalances;
       const appreciatingAssets = timeline.appreciatingAssets;
       const fallbackPrimaryMax = Math.max(1, ...totalBalances, ...rrifBalances, ...rrspBalances, ...tfsaBalances, ...nonRegisteredBalances, ...appreciatingAssets) * 1.10;
-      const primaryMaxWithHeadroom = Number(timeline.chartRanges?.portfolioMax) || fallbackPrimaryMax;
+      const stressPortfolioMax = Array.isArray(stressBands?.portfolio?.p90)
+        ? Math.max(0, ...stressBands.portfolio.p90)
+        : 0;
+      const primaryMaxWithHeadroom = Math.max(
+        Number(timeline.chartRanges?.portfolioMax) || fallbackPrimaryMax,
+        stressPortfolioMax * 1.10
+      );
 
-      const traces = [
+      const traces = [];
+      if (stressBands && Array.isArray(stressBands.years) && Array.isArray(stressBands.portfolio?.p10) && Array.isArray(stressBands.portfolio?.p90)) {
+        traces.push(
+          {
+            x: stressBands.years,
+            y: stressBands.portfolio.p10,
+            mode: "lines",
+            name: "Stress P10 (Total Balance)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            line: { color: "rgba(37,99,235,0.45)", width: 1.5, dash: "dash" }
+          },
+          {
+            x: stressBands.years,
+            y: stressBands.portfolio.p90,
+            mode: "lines",
+            name: "Stress Band (P10-P90)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            fill: "tonexty",
+            fillcolor: "rgba(37,99,235,0.24)",
+            line: { color: "rgba(37,99,235,0.45)", width: 1.5, dash: "dash" }
+          },
+          {
+            x: stressBands.years,
+            y: stressBands.portfolio.p50,
+            mode: "lines",
+            name: "Stress Median (P50)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            line: { color: "rgba(29,78,216,0.9)", width: 2, dash: "dot" }
+          }
+        );
+      }
+
+      traces.push(
         {
           x: years,
           y: totalBalances,
@@ -1434,7 +1745,7 @@
           hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
           line: { color: "#7c3aed", width: 2, dash: "dot" }
         },
-      ];
+      );
 
       const layout = {
         title: "Portfolio Value Over Time",
@@ -1493,7 +1804,7 @@
       });
     }
 
-    function drawIncomeChart(timeline) {
+    function drawIncomeChart(timeline, stressBands = null) {
       const years = timeline.years;
       const ages = timeline.ages;
       const xAxisConfig = buildXAxisWithAge(years, ages, false);
@@ -1504,7 +1815,13 @@
       const oasClawbacks = timeline.oasClawbacks;
       const netRetirementIncomes = timeline.netRetirementIncomes;
       const fallbackIncomeMax = Math.max(1, ...rrifWithdrawals, ...tfsaWithdrawals, ...nonRegisteredWithdrawals, ...benefits, ...oasClawbacks, ...netRetirementIncomes) * 1.10;
-      const incomeMaxWithHeadroom = Number(timeline.chartRanges?.incomeMax) || fallbackIncomeMax;
+      const stressIncomeMax = Array.isArray(stressBands?.income?.p90)
+        ? Math.max(0, ...stressBands.income.p90)
+        : 0;
+      const incomeMaxWithHeadroom = Math.max(
+        Number(timeline.chartRanges?.incomeMax) || fallbackIncomeMax,
+        stressIncomeMax * 1.10
+      );
       const retirementIndex = years.findIndex((year) => year === timeline.retirementCalendarYear);
       const rrifWithdrawalAtRetirement = retirementIndex >= 0 ? rrifWithdrawals[retirementIndex] : 0;
       const tfsaWithdrawalAtRetirement = retirementIndex >= 0 ? tfsaWithdrawals[retirementIndex] : 0;
@@ -1513,7 +1830,39 @@
       const oasClawbackAtRetirement = retirementIndex >= 0 ? oasClawbacks[retirementIndex] : 0;
       const netIncomeAtRetirement = retirementIndex >= 0 ? netRetirementIncomes[retirementIndex] : 0;
 
-      const traces = [
+      const traces = [];
+      if (stressBands && Array.isArray(stressBands.years) && Array.isArray(stressBands.income?.p10) && Array.isArray(stressBands.income?.p90)) {
+        traces.push(
+          {
+            x: stressBands.years,
+            y: stressBands.income.p10,
+            mode: "lines",
+            name: "Stress P10 (Net Income)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            line: { color: "rgba(234,88,12,0.45)", width: 1.5, dash: "dash" }
+          },
+          {
+            x: stressBands.years,
+            y: stressBands.income.p90,
+            mode: "lines",
+            name: "Stress Band (P10-P90)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            fill: "tonexty",
+            fillcolor: "rgba(234,88,12,0.24)",
+            line: { color: "rgba(234,88,12,0.45)", width: 1.5, dash: "dash" }
+          },
+          {
+            x: stressBands.years,
+            y: stressBands.income.p50,
+            mode: "lines",
+            name: "Stress Median (P50)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            line: { color: "rgba(194,65,12,0.9)", width: 2, dash: "dot" }
+          }
+        );
+      }
+
+      traces.push(
         {
           x: years,
           y: rrifWithdrawals,
@@ -1563,7 +1912,7 @@
           hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
           line: { color: "#ea580c", width: 3 }
         }
-      ];
+      );
 
       const layout = {
         title: "Retirement Income and Withdrawals Over Time",
@@ -1623,7 +1972,7 @@
       });
     }
 
-    function drawTaxChart(timeline) {
+    function drawTaxChart(timeline, stressBands = null) {
       const years = timeline.years;
       const ages = timeline.ages;
       const xAxisConfig = buildXAxisWithAge(years, ages, false);
@@ -1635,7 +1984,13 @@
       const marginalTaxRates = timeline.marginalTaxRates;
       const fallbackTaxMax = Math.max(1, ...incomeTaxes, ...capitalGainsTaxes, ...oasClawbacks, ...totalTaxes) * 1.10;
       const fallbackTaxRateMax = Math.max(1, ...averageTaxRates, ...marginalTaxRates) * 1.15;
-      const taxMaxWithHeadroom = Number(timeline.chartRanges?.taxAmountMax) || fallbackTaxMax;
+      const stressTaxMax = Array.isArray(stressBands?.taxes?.p90)
+        ? Math.max(0, ...stressBands.taxes.p90)
+        : 0;
+      const taxMaxWithHeadroom = Math.max(
+        Number(timeline.chartRanges?.taxAmountMax) || fallbackTaxMax,
+        stressTaxMax * 1.10
+      );
       const taxRateMax = Number(timeline.chartRanges?.taxRateMax) || fallbackTaxRateMax;
       const retirementIndex = years.findIndex((year) => year === timeline.retirementCalendarYear);
       const incomeTaxAtRetirement = retirementIndex >= 0 ? incomeTaxes[retirementIndex] : 0;
@@ -1645,7 +2000,39 @@
       const averageTaxAtRetirement = retirementIndex >= 0 ? averageTaxRates[retirementIndex] : 0;
       const marginalTaxAtRetirement = retirementIndex >= 0 ? marginalTaxRates[retirementIndex] : 0;
 
-      const traces = [
+      const traces = [];
+      if (stressBands && Array.isArray(stressBands.years) && Array.isArray(stressBands.taxes?.p10) && Array.isArray(stressBands.taxes?.p90)) {
+        traces.push(
+          {
+            x: stressBands.years,
+            y: stressBands.taxes.p10,
+            mode: "lines",
+            name: "Stress P10 (Total Taxes)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            line: { color: "rgba(17,24,39,0.45)", width: 1.5, dash: "dash" }
+          },
+          {
+            x: stressBands.years,
+            y: stressBands.taxes.p90,
+            mode: "lines",
+            name: "Stress Band (P10-P90)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            fill: "tonexty",
+            fillcolor: "rgba(17,24,39,0.24)",
+            line: { color: "rgba(17,24,39,0.45)", width: 1.5, dash: "dash" }
+          },
+          {
+            x: stressBands.years,
+            y: stressBands.taxes.p50,
+            mode: "lines",
+            name: "Stress Median (P50)",
+            hovertemplate: "%{fullData.name}: %{y:$,.0f}<extra></extra>",
+            line: { color: "rgba(31,41,55,0.9)", width: 2, dash: "dot" }
+          }
+        );
+      }
+
+      traces.push(
         {
           x: years,
           y: incomeTaxes,
@@ -1697,7 +2084,7 @@
           line: { color: "#0f766e", width: 2, dash: "dot" },
           yaxis: "y2"
         }
-      ];
+      );
 
       const layout = {
         title: "Retirement Taxes and Tax Rates Over Time",
@@ -1764,7 +2151,8 @@
       });
     }
 
-    async function runAnalysis() {
+    async function runAnalysis(options = {}) {
+      const includeStressBands = Boolean(options.includeStressBands);
       const payload = buildAnalysisPayload();
       const currentYear = payload.currentYear;
       const currentAge = payload.currentAge;
@@ -1781,9 +2169,11 @@
         payload.appreciatingAssets;
 
       const summary = document.getElementById("analysisSummary");
+        const stressSummary = document.getElementById("stressSummary");
       const strategySummary = document.getElementById("strategySummary");
       const taxBracketSummary = document.getElementById("taxBracketSummary");
       const button = document.getElementById("calculatePlotBtn");
+        const stressButton = document.getElementById("runStressBtn");
       const downloadButton = document.getElementById("downloadCsvBtn");
 
       if (currentAge <= 0 || retirementAge <= 0 || deathAge <= 0 || targetIncome <= 0 || nestEgg < 0) {
@@ -1798,62 +2188,60 @@
 
       button.disabled = true;
       button.textContent = "Calculating...";
+      if (stressButton) {
+        stressButton.disabled = true;
+        stressButton.textContent = includeStressBands ? "Running Stress Test..." : "Run Stress Test";
+      }
 
       try {
-        const response = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        const result = await fetchAnalysisResult(payload);
+        const timelineInputs = buildTimelineInputs(payload, currentYear);
+        const timeline = buildPlotTimeline(result, timelineInputs);
+        const currentStressConfig = getStressConfig(payload);
+        const currentStressSignature = buildStressSignature(payload, currentStressConfig);
 
-        const result = await response.json();
-
-        if (!response.ok) {
-          setSummaryMessage(summary, result.error || "Could not run analysis.", true);
-          return;
+        let stressBands = null;
+        if (includeStressBands) {
+          const stressRun = await runStressSweep(payload, currentYear);
+          stressBands = stressRun?.bands || null;
+          latestStressBands = stressBands;
+          latestStressSignature = stressRun?.signature || null;
+          if (stressSummary && stressBands) {
+            setSummaryMessage(
+              stressSummary,
+              `Stress band active: ${stressBands.scenarioCount} scenarios ` +
+              `(ARR ${stressBands.arrValues[0].toFixed(2)}% to ${stressBands.arrValues[stressBands.arrValues.length - 1].toFixed(2)}%, ` +
+              `Inflation ${stressBands.inflationValues[0].toFixed(2)}% to ${stressBands.inflationValues[stressBands.inflationValues.length - 1].toFixed(2)}%).`,
+              false
+            );
+          }
+        } else if (latestStressBands && latestStressSignature === currentStressSignature) {
+          stressBands = latestStressBands;
+          if (stressSummary) {
+            setSummaryMessage(stressSummary, `Stress band active (${stressBands.scenarioCount} scenarios).`, false);
+          }
+        } else if (stressSummary) {
+          stressSummary.textContent = "";
+          latestStressBands = null;
+          latestStressSignature = null;
         }
 
-        const timeline = buildPlotTimeline(result, {
-          currentYear,
-          currentAge,
-          retirementAge,
-          arr,
-          inflation,
-          rrif: 0,
-          rrsp: payload.rrsp,
-          tfsaStart: payload.tfsa,
-          nonRegisteredStart: payload.individualTaxable,
-          appreciatingAssetsStart: payload.appreciatingAssets,
-          annualRRSPContribution: payload.annualRRSPContribution,
-          annualTFSAContribution: payload.annualTFSAContribution,
-          annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
-          nonRrifStart: payload.tfsa + payload.individualTaxable
-        });
-
-        drawPortfolioChart(timeline);
-        drawIncomeChart(timeline);
-        drawTaxChart(timeline);
+        drawPortfolioChart(timeline, stressBands);
+        drawIncomeChart(timeline, stressBands);
+        drawTaxChart(timeline, stressBands);
         attachSynchronizedPanZoom();
 
         latestAnalysis = {
           result,
           inputs: {
-            currentYear,
+            ...timelineInputs,
             currentAge,
             retirementAge,
             arr,
-            inflation,
-            rrif: 0,
-            rrsp: payload.rrsp,
-            tfsaStart: payload.tfsa,
-            nonRegisteredStart: payload.individualTaxable,
-            appreciatingAssetsStart: payload.appreciatingAssets,
-            annualRRSPContribution: payload.annualRRSPContribution,
-            annualTFSAContribution: payload.annualTFSAContribution,
-            annualNonRegisteredContribution: payload.annualNonRegisteredContribution,
-            nonRrifStart: payload.tfsa + payload.individualTaxable
+            inflation
           },
-          timeline
+          timeline,
+          stressBands
         };
         downloadButton.disabled = false;
 
@@ -1910,7 +2298,10 @@
         renderStrategyComparisonTable(result.strategyComparison);
         activeStrategy = result.selectedStrategy || activeStrategy;
       } catch (error) {
-        setSummaryMessage(summary, "Server error while running analysis. Start the Flask app and try again.", true);
+        setSummaryMessage(summary, error?.message || "Server error while running analysis. Start the Flask app and try again.", true);
+        if (stressSummary) {
+          stressSummary.textContent = "";
+        }
         if (strategySummary) {
           strategySummary.textContent = "";
         }
@@ -1921,10 +2312,38 @@
       } finally {
         button.disabled = false;
         button.textContent = "Calculate & Plot";
+        if (stressButton) {
+          stressButton.disabled = false;
+          stressButton.textContent = "Run Stress Test";
+        }
+      }
+    }
+
+    function runStressTest() {
+      runAnalysis({ includeStressBands: true });
+    }
+
+    function clearStressResults() {
+      latestStressBands = null;
+      latestStressSignature = null;
+
+      const stressSummary = document.getElementById("stressSummary");
+      if (stressSummary) {
+        stressSummary.textContent = "";
+      }
+
+      if (latestAnalysis && latestAnalysis.timeline) {
+        drawPortfolioChart(latestAnalysis.timeline, null);
+        drawIncomeChart(latestAnalysis.timeline, null);
+        drawTaxChart(latestAnalysis.timeline, null);
+        attachSynchronizedPanZoom();
+        latestAnalysis.stressBands = null;
       }
     }
 
     document.getElementById("calculatePlotBtn").addEventListener("click", runAnalysis);
+    document.getElementById("runStressBtn").addEventListener("click", runStressTest);
+    document.getElementById("clearStressBtn").addEventListener("click", clearStressResults);
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCurrentCsv);
     document.getElementById("saveInputsJsonBtn").addEventListener("click", saveInputsJson);
     document.getElementById("loadInputsJsonBtn").addEventListener("click", triggerLoadInputsJson);
