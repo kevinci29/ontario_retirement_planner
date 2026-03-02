@@ -30,6 +30,7 @@ Web-based Ontario retirement planning tool with multi-strategy withdrawal analys
   - Investment portfolio curves
   - Income curves
   - Tax curves
+	- Optional stress-test confidence bands (P10/P50/P90 overlays)
 - Compares strategies in an interactive summary table with sortable columns
 - Lets users switch active strategy by clicking a row in the summary table (plots refresh automatically)
 
@@ -39,6 +40,24 @@ Web-based Ontario retirement planning tool with multi-strategy withdrawal analys
 - Retirement goals (retirement age, target post-tax income, death age)
 - Pension/government income (OAS/CPP/pension + start ages)
 - Assumptions (ARR, inflation, taxable share of non-registered withdrawals, tax assumptions toggles)
+- Stress testing (ARR min/max/step and inflation min/max/step)
+
+## Actions and Stress Workflow
+
+- Main actions are shown above the Stress Testing section:
+	- `Calculate & Plot`
+	- `Download CSV`
+	- `Save Inputs JSON`
+	- `Load Inputs JSON`
+- Stress Testing section includes:
+	- `Run Stress Test`
+	- `Clear Stress Results`
+- Running stress test executes a grid of ARR/inflation scenarios and overlays confidence bands on all charts:
+	- P10 lower bound (dashed)
+	- P50 median (dotted)
+	- P90 upper bound (dashed)
+	- shaded P10-P90 region
+- Clearing stress results removes overlays and redraws base charts using the latest non-stress analysis.
 
 ## Current Strategy Options
 
